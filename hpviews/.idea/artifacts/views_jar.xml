@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact name="views:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/views_jar</output-path>
+    <root id="root">
+      <element id="archive" name="views.jar">
+        <element id="module-output" name="views" />
+      </element>
+      <element id="library" level="project" name="Maven: org.json:json:20190722" />
+    </root>
+  </artifact>
+</component>

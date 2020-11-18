@@ -1,0 +1,187 @@
+package services;
+
+import controllers.OnTreeDoubleClicked;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import views.Card;
+import views.UITreeExplorer;
+
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import static views.UITreeExplorer.*;
+
+@SuppressWarnings("rawtypes")
+public class UITreeService extends MouseAdapter {
+
+    private final String treeData;
+    private final TreeDataSource dataSource;
+
+
+
+
+
+    private final Card treeContainer;
+
+    private HPGui hp = new HPGui();
+
+    public UITreeService(UITreeExplorer uiTreeExplorer) {
+        treeData = uiTreeExplorer.getTree();
+        this.treeContainer = uiTreeExplorer.getTreeContainer();
+        this.dataSource = uiTreeExplorer.getTreeDataSource();
+    }
+
+    public void drawLevels(){
+
+        if(dataSource == TreeDataSource.JSON){
+            JSONArray jsonArray = new JSONArray(treeData);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject levelData = jsonArray.getJSONObject(i);
+                treeContainer.add(getLevelView(levelData, jsonArray));
+            }
+        }else{
+            System.out.println("Explorer...");
+        }
+    }
+
+    private Tree getLevelView(JSONObject levelData, JSONArray mainTree){
+
+        Tree tree = new Tree(
+                levelData.getInt(levelKey),
+                levelData.getBoolean(dirKey),
+                levelData.getString(nameKey));
+                tree.getInnerCard().addMouseListener(this);
+                tree.setMainTree(mainTree);
+                tree.getLabel().addMouseListener(new OnLabelClicked(tree));
+                tree.getIcon().addMouseListener(new OnLabelClicked(tree));
+
+                try {
+                    getAnotherLevel(levelData, tree);
+                    tree.setHasChildren(true);
+
+                }catch (JSONException e){
+//                    System.err.println(e.getMessage());
+                }
+        return tree;
+    }
+
+    private void getAnotherLevel(JSONObject levelData, Tree container){
+
+        JSONArray dataArray = levelData.getJSONArray(childrenKey);
+        container.setDirTree(dataArray);
+
+        for (int i = 0; i < dataArray.length(); i++) {
+            JSONObject childrenLevel = dataArray.getJSONObject(i);
+            Tree tree = new Tree(
+                    childrenLevel.getInt(levelKey),
+                    childrenLevel.getBoolean(dirKey),
+                    childrenLevel.getString(nameKey));
+                    tree.getInnerCard().addMouseListener(this);
+                    tree.setMainTree(dataArray);
+                    container.add(tree);
+                    try{
+                        getAnotherLevel(childrenLevel, tree);
+                        tree.setHasChildren(true);
+                    }catch (JSONException e){
+//                        System.err.println(e.getMessage());
+                    }
+        }
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        Card<Tree> card = (Card<Tree>)e.getSource();
+        Tree owner = card.getObject();
+
+        if(owner.isHasChildren()) {
+
+            if(owner.isCollapsed()){
+                showSubLevels(owner);
+            }else{
+                hideSubLevels(owner);
+            }
+            if(e.getClickCount() > 1){
+                showFolderContents(owner);
+            }
+        }
+
+        /*
+        update explorer
+         */
+        if(e.getClickCount() > 1 && owner.isDirectory()){
+            onTreeDoubleClicked.mainTree(owner.getMainTree(), owner.getDirTree(), owner.getLevel());
+        }
+    }
+
+    private void showFolderContents(Tree owner) {
+
+    }
+
+    private void showSubLevels(Tree levels){
+        int compNo =  levels.getComponents().length;
+
+        int h = (compNo * Tree.HEIGHT) + (compNo * 3);
+        hp.setAllSizes(levels, UITreeExplorer.WIDTH, h);
+//        hp.setAllSizes(levels.getComponent(1), UITreeExplorer.WIDTH,UITreeExplorer.Tree.HEIGHT+10 );
+
+        if(levels.getLevel() > 1){
+            Container cont = levels.getParent();
+            for (int i = 0; i < levels.getLevel()-1; i++) {
+                int hh = (cont.getPreferredSize().height + h) - Tree.HEIGHT;
+                hp.setAllSizes(cont, UITreeExplorer.WIDTH, hh);
+                cont = cont.getParent();
+            }
+
+        }
+        updateTreeContainer();
+        levels.setCollapsed(false);
+
+    }
+
+    private void hideSubLevels(Tree tree){
+        int oHeight = tree.getPreferredSize().height - Tree.HEIGHT;
+        hp.setAllSizes(tree, UITreeExplorer.WIDTH, Tree.HEIGHT + 2);
+
+        if(tree.getLevel() > 1){
+            Container cont = tree.getParent();
+            for (int i = 0; i < tree.getLevel()-1; i++) {
+                hp.setAllSizes(cont, UITreeExplorer.WIDTH, cont.getPreferredSize().height - oHeight);
+                cont = cont.getParent();
+            }
+        }
+        updateTreeContainer();
+        tree.setCollapsed(true);
+    }
+
+    private void updateTreeContainer(){
+        treeContainer.revalidate();
+        treeContainer.repaint();
+    }
+
+    public enum TreeDataSource{
+        JSON, PATH
+    }
+
+    static OnTreeDoubleClicked onTreeDoubleClicked;
+
+    public static void setOnTreeDoubleClicked(OnTreeDoubleClicked onTreeDoubleClicked) {
+        UITreeService.onTreeDoubleClicked = onTreeDoubleClicked;
+    }
+
+    private class OnLabelClicked extends MouseAdapter{
+
+        private final Tree tree;
+        public OnLabelClicked(Tree tree) {
+            this.tree = tree;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            super.mouseClicked(e);
+        }
+    }
+}
