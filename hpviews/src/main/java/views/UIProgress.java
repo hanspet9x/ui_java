@@ -1,8 +1,10 @@
 package views;
 
+import containers.Card;
+
 import java.awt.*;
 
-public class UIProgress extends Card{
+public class UIProgress extends Card {
 
     private final Card progressView;
     private final int height;

@@ -1,6 +1,7 @@
 package views;
 
 
+import containers.Card;
 import services.HPGui;
 import services.UIFilePickerService;
 
@@ -10,7 +11,7 @@ import java.io.IOException;
 import java.nio.file.*;
 
 @SuppressWarnings("rawtypes")
-public class UIFilePicker extends Card{
+public class UIFilePicker extends Card {
 
     private final Path sourcePath;
     private static HPGui hp;
@@ -21,7 +22,7 @@ public class UIFilePicker extends Card{
     footer ui
      */
     private final JLabel lSelected, lCurrentPath;
-    private JButton bSelect;
+    private JButton bSelect, bSelectAll;
     /**
      * if only one file should be selected.
      */
@@ -106,12 +107,19 @@ public class UIFilePicker extends Card{
 
         bSelect = new JButton("select");
         bSelect.setFont(font);
+        bSelect.setActionCommand("s1");
 
-        Card card = new Card(new GridLayout(1, 3));
+        bSelectAll = new JButton("select files");
+        bSelectAll.setActionCommand("s2");
+        bSelectAll.setFont(font);
 
-        card.add(hp.setAlignCenter(lSelected));
-        card.add(hp.setAlignCenter(lCurrentPath));
-        card.add(hp.setAlignCenter(bSelect));
+        Card card = new Card(new BorderLayout());
+
+        card.add(hp.setAlignCenter(lSelected), BorderLayout.LINE_START);
+        card.add(hp.setAlignCenter(lCurrentPath), BorderLayout.CENTER);
+        Card buttons = HPGui.twoColumns(bSelect, bSelectAll, 10);
+//        card.add(hp.setAlignCenter(bSelect));
+        card.add(hp.setAlignCenter(buttons), BorderLayout.LINE_END);
 
         return card;
     }
@@ -142,5 +150,9 @@ public class UIFilePicker extends Card{
 
     public void setWatch(boolean watch) {
         this.watch = watch;
+    }
+
+    public JButton getbSelectAll() {
+        return bSelectAll;
     }
 }

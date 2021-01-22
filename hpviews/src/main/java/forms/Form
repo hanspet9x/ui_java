@@ -1,0 +1,109 @@
+package forms;
+
+import containers.Card;
+import services.HPGui;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class Form extends Card {
+
+    private String label = "Username";
+    private String placeholder = null;
+
+    private int width = 250;
+    private int height = 45;
+    private Color inputColor = Color.GRAY;
+
+    private boolean enabled;
+
+    public HPGui hp = new HPGui();
+
+    private JTextField field;
+
+    public Form() {
+        formBuild();
+    }
+
+    public Form(int width, int height){
+        this.width = width;
+        this.height = height;
+        formBuild();
+    }
+
+    public void formBuild(){
+        field = new JTextField();
+        field.setFont(new Font(HPGui.FontText, Font.PLAIN, 18));
+        field.setOpaque(false);
+        field.setBorder(null);
+        setCardSize(width, height);
+        setBorderRadius(10);
+        setPadding(8);
+        setBoxShadow(2, hp.getColor(Color.BLACK, .09f));
+
+        setLayout(new BorderLayout());
+        /*set label and placeholder*/
+
+        if(label != null){
+            JLabel formTitle = new JLabel(label);
+            add(formTitle, BorderLayout.PAGE_START);
+        }
+
+        add(field);
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getPlaceholder() {
+        return placeholder;
+    }
+
+    public void setPlaceholder(String placeholder) {
+        this.placeholder = placeholder;
+    }
+
+    public JTextField getField() {
+        return field;
+    }
+
+
+    public void setBackgroundColor(Color backgroundColor) {
+        setBackground(backgroundColor);
+    }
+
+    public Color getInputColor() {
+        return inputColor;
+    }
+
+    public void setInputColor(Color inputColor) {
+        this.inputColor = inputColor;
+        field.setForeground(inputColor);
+    }
+
+
+    public String getValue(){
+        return field.getText();
+    }
+
+    public void setValue(String value){
+        field.setText(value);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+
+}

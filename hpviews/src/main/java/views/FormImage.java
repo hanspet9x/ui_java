@@ -5,6 +5,8 @@
  */
 package views;
 
+import containers.Card;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;

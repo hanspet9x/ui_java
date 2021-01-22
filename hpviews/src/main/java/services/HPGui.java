@@ -6,7 +6,7 @@
 package services;
 
 
-import views.Card;
+import containers.Card;
 
 import javax.swing.*;
 import javax.swing.SpringLayout;
@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import java.util.List;
 
 /**
  *
@@ -40,18 +41,25 @@ import javax.swing.border.EmptyBorder;
  */
 
 @SuppressWarnings("rawtypes")
-public class HPGui {
+public  class HPGui {
 
-    private final int FRAME_EXTRA_WIDTH = 16;
-    private final int FRAME_ICON_SIZE = 60;
-    private SystemTray systemTray;
-    private TrayIcon tray;
+    private static final int FRAME_EXTRA_WIDTH = 16;
+    private static final int FRAME_ICON_SIZE = 60;
+    private static SystemTray systemTray;
+    private static TrayIcon tray;
     public static String FontStandard = "Mongolian Baiti";
     public static String FontHandwriting = "Lucida Handwriting";
+    public static String FontHead = "Patua One";
+
+    public static String FontHead2 = "Bree Serif";
+
+    public static String FontText = "Cormorant Garamond";
+
     public static String FontComplex = "Harrington";
 
     public static final java.util.List<String> imgExtensions =
             java.util.List.of(".jpg", ".jpeg", ".png", ".gif");
+
 
     public HPGui() {
        if(systemTray.isSupported()){
@@ -59,38 +67,56 @@ public class HPGui {
        }
     }
 
+    public static void registerFonts(){
+        List<String> fonts = Arrays.asList("/fonts/BreeSerif-Regular.ttf",
+                "/fonts/CormorantGaramond-Regular.ttf", "/fonts/PatuaOne-Regular.ttf");
+
+        fonts.forEach( fontName -> {
+            try {
+                Font font = Font.createFont(Font.TRUETYPE_FONT, new File(HPGui.class.getResource(fontName).toURI()));
+                if(!GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font)){
+                    throw new Exception("Font "+fontName+" registration failed.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        });
+
+    }
+
 //     DUMMYTEXT
-    
-    public String lorem(){
+
+    public static String lorem(){
         return "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
     }
-    
-    public Dimension getScreenSize(){
+
+    public static Dimension getScreenSize(){
         Dimension toolkit = Toolkit.getDefaultToolkit().getScreenSize();
         return new Dimension(toolkit.width, toolkit.height - 40);
-         
+
     }
-    public void setPrefSize(Component comp, Dimension dim){
+    public static void setPrefSize(Component comp, Dimension dim){
         comp.setPreferredSize(dim);
     }
-    
-    public void setMinSize(Component comp, Dimension dim){
+
+    public static void setMinSize(Component comp, Dimension dim){
         comp.setMinimumSize(dim);
     }
-    
-    public void setMaxSize(Component comp, Dimension dim){
+
+    public static void setMaxSize(Component comp, Dimension dim){
         comp.setMaximumSize(dim);
     }
-    
-    public Component setAllSizes(Component comp, Dimension dim){
+
+    public static Component setAllSizes(Component comp, Dimension dim){
         comp.setMinimumSize(dim);
         comp.setMaximumSize(dim);
         comp.setPreferredSize(dim);
         comp.setSize(dim);
         return comp;
     }
-    
-    public Component setAllSizes(Component comp, int width, int height){
+
+    public static Component setAllSizes(Component comp, int width, int height){
         Dimension dim = new Dimension(width, height);
         comp.setMinimumSize(dim);
         comp.setMaximumSize(dim);
@@ -98,8 +124,8 @@ public class HPGui {
         comp.setSize(dim);
         return comp;
     }
-    
-    public Component setAllWidths(Component comp, int width){
+
+    public static Component setAllWidths(Component comp, int width){
         Dimension dim = new Dimension(width, comp.getHeight());
         comp.setMinimumSize(dim);
         comp.setMaximumSize(dim);
@@ -107,8 +133,8 @@ public class HPGui {
         comp.setSize(dim);
         return comp;
     }
-    
-    public Component setAllHeights(Component comp, int height){
+
+    public static Component setAllHeights(Component comp, int height){
         Dimension dim = new Dimension(comp.getWidth(), height);
         comp.setMinimumSize(dim);
         comp.setMaximumSize(dim);
@@ -117,13 +143,13 @@ public class HPGui {
         return comp;
     }
 
-    
-    
+
+
     /*
     SWING & Component
     */
-    
-    public JTextArea getTextArea(String text, int width, int height){
+
+    public static JTextArea getTextArea(String text, int width, int height){
         JTextArea textArea = new JTextArea(text);
             textArea.setLineWrap(true);
             textArea.setEditable(false);
@@ -134,40 +160,40 @@ public class HPGui {
             textArea.setBackground(getColTranslucent());
             return textArea;
     }
-    
-    
-    public JTextArea getTextArea(String text, int width){
+
+
+    public static JTextArea getTextArea(String text, int width){
             return getTextArea(text, width, 20);
     }
 
-    public Card getTextRule(String text, Color color){
+    public static Card getTextRule(String text, Color color){
         int padding = 10;
         BufferedImage image = new BufferedImage(100, 50, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         int width = g.getFontMetrics().stringWidth(text)+padding;
-        
+
         JLabel label = new JLabel(text);
         setAllSizes(label, width, 70);
-        
+
         JLabel rule = new JLabel();
         rule.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, color));
         setTopPadding(rule, 4);
-        
+
         Card holder = new Card(new SpringLayout());
         holder.setPadding(0);
         holder.setOpacity(0.0f);
         holder.add(label);
         holder.add(rule);
-        
+
         HPGui.Springer.makeCompactGrid(holder, 1, 2, 0, 0, 1, 0);
-        
+
         return holder;
     }
     /*
     CONTAINERS & COLUMNS
     */
-    
-    public Card twoColumns(Component one, Component two, int x, int y){
+
+    public static Card twoColumns(Component one, Component two, int x, int y){
         Card card = new Card(new SpringLayout());
         card.setOpacity(.0f);
         card.add(one);
@@ -175,36 +201,36 @@ public class HPGui {
         Springer.makeCompactGrid(card, 1, 2, 0, 0, x, y);
         return card;
     }
-    
-    public Card twoColumns(Component one, Component two, int x){
-     
+
+    public static Card twoColumns(Component one, Component two, int x){
+
         return twoColumns(one, two, x, 0);
     }
-    
-    public Card twoColumns(Component one, Component two){
+
+    public static Card twoColumns(Component one, Component two){
         return twoColumns(one, two, 0, 0);
     }
-     
-    public Card threeColumns(Component one, Component two, Component three,int x, int y){
+
+    public static Card threeColumns(Component one, Component two, Component three,int x, int y){
         Card card = new Card(new SpringLayout());
         card.setOpacity(.0f);
         card.add(one);
         card.add(two);
         card.add(three);
-        
+
         Springer.makeCompactGrid(card, 1, 3, 0, 0, x, y);
         return card;
     }
-    
-    public Card threeColumns(Component one, Component two, Component three,int x){
+
+    public static Card threeColumns(Component one, Component two, Component three,int x){
         return threeColumns(one, two, three, x, 0);
     }
-    
-    public Card threeColumns(Component one, Component two, Component three){
+
+    public static Card threeColumns(Component one, Component two, Component three){
         return threeColumns(one, two, three, 0, 0);
     }
-    
-    public Card twoRows(Component one, Component two, int x, int y){
+
+    public static Card twoRows(Component one, Component two, int x, int y){
         Card card = new Card(new SpringLayout());
         card.setOpacity(.0f);
         card.add(one);
@@ -212,31 +238,31 @@ public class HPGui {
         Springer.makeCompactGrid(card, 2, 1, 0, 0, x, y);
         return card;
     }
-    
-    public Card twoRows(Component one, Component two, int x){
-     
+
+    public static Card twoRows(Component one, Component two, int x){
+
         return twoRows(one, two, x, 0);
     }
-    
-    public Card twoRows(Component one, Component two){
+
+    public static Card twoRows(Component one, Component two){
         return twoRows(one, two, 0, 0);
     }
-    
-    public JScrollPane getScrollPane(JComponent view, int width, int height){
+
+    public static JScrollPane getScrollPane(JComponent view, int width, int height){
         JScrollPane pane = new JScrollPane(view);
         pane.setOpaque(false);
         setAllSizes(pane, width, height);
         pane.setBackground(getColTranslucent());
         pane.setViewportBorder(BorderFactory.createEmptyBorder());
         pane.setBorder(BorderFactory.createEmptyBorder());
-        
+
         JViewport vport = pane.getViewport();
         vport.setBackground(getColTranslucent());
         vport.setOpaque(false);
         return pane;
     }
 
-    public JScrollPane getScrollPane(Card card, int width, int height){
+    public static JScrollPane getScrollPane(Card card, int width, int height){
         JScrollPane pane = new JScrollPane(card);
         pane.setOpaque(false);
         setAllSizes(pane, width, height);
@@ -250,7 +276,7 @@ public class HPGui {
         return pane;
     }
 
-    public JScrollPane getScrollPane(Card card){
+    public static JScrollPane getScrollPane(Card card){
         JScrollPane pane = new JScrollPane(card);
         pane.setOpaque(false);
         pane.setBackground(getColTranslucent());
@@ -263,7 +289,7 @@ public class HPGui {
         return pane;
     }
 
-    public JScrollPane getScrollPane(){
+    public static JScrollPane getScrollPane(){
         JScrollPane pane = new JScrollPane();
         pane.setOpaque(false);
         pane.setBackground(getColTranslucent());
@@ -276,7 +302,7 @@ public class HPGui {
         return pane;
     }
 
-    public JScrollPane getScrollPane(JComponent view){
+    public static JScrollPane getScrollPane(JComponent view){
         JScrollPane pane = new JScrollPane(view);
         pane.setOpaque(false);
         pane.setBackground(getColTranslucent());
@@ -290,7 +316,7 @@ public class HPGui {
     }
 
 
-    public Card getCard(){
+    public static Card getCard(){
         Card card = new Card();
         card.setOpacity(.0f);
         card.setPadding(0);
@@ -306,15 +332,15 @@ public class HPGui {
     /*
     TIME and DATE
     */
-    
-    public String getFormalDay(int day){
+
+    public static String getFormalDay(int day){
         String sDay = String.valueOf(day);
         String c = String.valueOf(sDay.charAt(sDay.length()-1));
-        
+
         if(sDay.length() > 1 && c.equals("2")){
             return sDay+"nd";
         }
-        
+
         switch(day){
             case 1:
                sDay = 1+"st";
@@ -324,22 +350,22 @@ public class HPGui {
                break;
             case 3:
                sDay = 3+"rd";
-               break; 
+               break;
             default:
                 sDay = day+"th";
         }
-        
+
         return sDay;
     }
-    
-    public String getFormalDay(String day){
+
+    public static String getFormalDay(String day){
         String sDay;
         String c = String.valueOf(day.charAt(day.length()-1));
-        
+
         if(day.length() > 1 && c.equals("2")){
             return day+"nd";
         }
-        
+
         switch(day){
             case "1":
                sDay = "1st";
@@ -349,19 +375,19 @@ public class HPGui {
                break;
             case "3":
                sDay = "3rd";
-               break; 
+               break;
             default:
                 sDay = day+"th";
         }
-        
+
         return sDay;
     }
 
-    public String getDateTime() {
+    public static String getDateTime() {
         return Date.from(Instant.now()).toString();
     }
 
-    public String getDate(){
+    public static String getDate(){
         Calendar cal = Calendar.getInstance();
         int year = cal.get(Calendar.YEAR);
         int month = cal.get(Calendar.MONTH)+1;
@@ -370,14 +396,14 @@ public class HPGui {
         return prefixZero(day)+"-"+prefixZero(month)+"-"+year;
     }
 
-    public long getDateDiff(String date1, String date2) {
+    public static long getDateDiff(String date1, String date2) {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         final LocalDate firstDate = LocalDate.parse(date1, formatter);
         final LocalDate secondDate = LocalDate.parse(date2, formatter);
         return ChronoUnit.DAYS.between(firstDate, secondDate);
     }
 
-    public int getMonth(String month) {
+    public static int getMonth(String month) {
         Date date = null;
         try {
             date = new SimpleDateFormat("MMM", Locale.ENGLISH).parse(month);
@@ -390,14 +416,14 @@ public class HPGui {
 
     }
 
-    public String prefixZero(String num){
+    public static String prefixZero(String num){
         if(num.length() < 2){
             return "0"+num;
         }
         return num;
     }
 
-    public String prefixZero(int num){
+    public static String prefixZero(int num){
         String sNum = String.valueOf(num);
         if(sNum.length() < 2){
             return "0"+num;
@@ -406,41 +432,41 @@ public class HPGui {
     }
 
 //    ALIGNMENT
-    public Card setAlignCenter(JComponent comp){
-        
+    public static Card setAlignCenter(JComponent comp){
+
         comp.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         Card center = new Card();
         center.setLayout(new BoxLayout(center, BoxLayout.PAGE_AXIS));
-        
+
         center.add(Box.createVerticalGlue());
         center.add(comp);
         center.add(Box.createVerticalGlue());
-        
+
         return center;
     }
-    public Card setAlignCenterH(JComponent comp){
-        
+    public static Card setAlignCenterH(JComponent comp){
+
         Card panel = new Card(new FlowLayout(FlowLayout.CENTER, 0,0));
         panel.add(comp);
         panel.setOpacity(.0f);
-        return panel;     
+        return panel;
     }
 
 
-    public void setAlignCenterV(Component comp){
+    public static void setAlignCenterV(Component comp){
         Container cont = comp.getParent();
         int height = cont.getHeight();
-        
+
         int cHeight = comp.getHeight();
-        
+
         int y = height - cHeight;
-        
+
         y = (int)((double)y/(double)2);
         comp.setLocation(comp.getLocation().x, y);
         comp.revalidate();
-    }   
-    public Card setAlignLeft(JComponent comp){
+    }
+    public static Card setAlignLeft(JComponent comp){
         Card panel = new Card();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         panel.add(comp);
@@ -449,7 +475,7 @@ public class HPGui {
         comp.setAlignmentX(Component.LEFT_ALIGNMENT);
         return panel;
     }
-    public Container setAlignRight(JComponent comp){
+    public static Container setAlignRight(JComponent comp){
         Card panel = new Card();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         panel.add(comp);
@@ -459,56 +485,56 @@ public class HPGui {
         comp.setAlignmentX(Component.RIGHT_ALIGNMENT);
         return panel;
     }
-    
-    public void setPadding(JComponent comp, int value){
-        
+
+    public static void setPadding(JComponent comp, int value){
+
         comp.setBorder(BorderFactory.createEmptyBorder(value, value, value, value));
-        
+
     }
 
-    public void setPadding(JComponent comp, Border inside, int value){
+    public static void setPadding(JComponent comp, Border inside, int value){
         Border outside = BorderFactory.createEmptyBorder(value, value, value, value);
         Border b = BorderFactory.createCompoundBorder(outside, inside);
         comp.setBorder(b);
     }
-    public void setPadding(JComponent comp, int x, int y){
+    public static void setPadding(JComponent comp, int x, int y){
         comp.setBorder(BorderFactory.createEmptyBorder(y, x, y, x));
     }
-    public void setPadding(JComponent comp, int top, int left, int bottom, int right){
+    public static void setPadding(JComponent comp, int top, int left, int bottom, int right){
         comp.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
     }
-    public void setLeftPadding(JComponent comp, int n){
+    public static void setLeftPadding(JComponent comp, int n){
         comp.setBorder(BorderFactory.createEmptyBorder(0, n, 0, 0));
     }
-    public void setRightPadding(JComponent comp, int n){
+    public static void setRightPadding(JComponent comp, int n){
         comp.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, n));
     }
-    public void setTopPadding(JComponent comp, int n){
+    public static void setTopPadding(JComponent comp, int n){
         comp.setBorder(BorderFactory.createEmptyBorder(n, 0, 0, 0));
     }
-    public void setBottomPadding(JComponent comp, int n){
+    public static void setBottomPadding(JComponent comp, int n){
         comp.setBorder(BorderFactory.createEmptyBorder(0, 0, n, 0));
     }
 
 
-    public Card getMarginCard(JComponent comp, int size){
+    public static Card getMarginCard(JComponent comp, int size){
         Card c = new Card();
         c.add(comp);
         c.setBorder(BorderFactory.createEmptyBorder(size, size, size, size));
         return c;
     }
-/*    public void getBorder(JComponent comp, Color color, int thickness, boolean rounded){
+/*    public static void getBorder(JComponent comp, Color color, int thickness, boolean rounded){
         Card c = new Card();
         c.setBorder(BorderFactory.createLineBorder(color, thickness, rounded));
     }
-    public void getBorder(JComponent comp, String hexColor, int thickness, boolean rounded){
+    public static void getBorder(JComponent comp, String hexColor, int thickness, boolean rounded){
         comp.setBorder(BorderFactory.createLineBorder(Color.decode(hexColor), thickness, rounded));
     }*/
 
-    public void setBorder(JComponent comp, Color color, int thickness, boolean rounded){
+    public static void setBorder(JComponent comp, Color color, int thickness, boolean rounded){
         comp.setBorder(BorderFactory.createLineBorder(color, thickness, rounded));
     }
-    public void setBorder(JComponent comp, String hexColor, int thickness, boolean rounded){
+    public static void setBorder(JComponent comp, String hexColor, int thickness, boolean rounded){
         comp.setBorder(BorderFactory.createLineBorder(Color.decode(hexColor), thickness, rounded));
     }
 
@@ -517,57 +543,121 @@ public class HPGui {
     /*
     COLORS
      */
-    public Color getColor(String hex){
+    public static Color getColor(String hex){
         return Color.decode(hex);
     }
-    
-    public Color getColor(String hex, int alpha){
+
+    public static Color getColor(String hex, int alpha){
         Color color = Color.decode(hex);
         int red = color.getRed();
         int blue = color.getBlue();
         int green = color.getGreen();
-        
+
         return new Color(red, green, blue, alpha);
     }
-    
-    public Color getColor(Color color, int alpha){
+
+    public static Color getColor(Color color, int alpha){
         int red = color.getRed();
         int blue = color.getBlue();
         int green = color.getGreen();
-        
+
         return new Color(red, green, blue, alpha);
     }
-    public Color getColor(String hex, float alpha){
+
+    public static Color getColor(String hex, float alpha){
         Color color = Color.decode(hex);
         int red = color.getRed();
         int blue = color.getBlue();
         int green = color.getGreen();
-        
+
         int alp = Math.round(alpha * 255);
-        
+
         return new Color(red, green, blue, alp);
     }
-    
-    public Color getColor(Color color, float alpha){
+
+    public static Color getColor(Color color, float alpha){
         int red = color.getRed();
         int blue = color.getBlue();
         int green = color.getGreen();
-        
+
         int alp = Math.round(alpha * 255);
-        
+
         return new Color(red, green, blue, alp);
     }
-    
-    public Color getColor(int r, int g, int b, float a){
+
+    public static Color getColorByPercent(Color color, int percent){
+        int red = getPercent(percent, color.getRed());
+        int blue = getPercent(percent, color.getBlue());
+        int green = getPercent(percent, color.getGreen());
+        int alpha = color.getAlpha();
+
+        return new Color(red, green, blue, alpha);
+    }
+
+    public static Color getDarkerColor(Color color, int darkness){
+        int red = validateColor(color.getRed() - darkness);
+        int blue = validateColor(color.getBlue() - darkness);
+        int green = validateColor(color.getGreen() - darkness);
+        int alpha = color.getAlpha();
+
+        return new Color(red, green, blue, alpha);
+    }
+
+    public static Color getBrighterColor(Color color, int lightness){
+        int red = validateColor(color.getRed() + lightness);
+        int blue = validateColor(color.getBlue() + lightness);
+        int green = validateColor(color.getGreen() + lightness);
+        int alpha = color.getAlpha();
+
+        return new Color(red, green, blue, alpha);
+    }
+
+    private static int validateColor(int colorResult){
+        if(colorResult > 255){
+            return 255;
+        }else return Math.max(colorResult, 0);
+    }
+
+    public static boolean hasAlpha(Color color){
+        return color.getAlpha() > 0;
+    }
+
+    public static Color getColor(int r, int g, int b, float a){
         return new Color(r, g, b, a);
     }
-    public Color getColor(int r, int g, int b){
+
+    public static Color getColor(int r, int g, int b){
         return new Color(r, g, b);
     }
-    
-    public Color getColTranslucent(){
+
+    public static Color getColTranslucent(){
         return new Color(.0f, .0f, .0f, 0.0f);
     }
+
+    public static boolean isSameColor(Color color1, Color color2){
+        if(color1.getRed() != color2.getRed()){
+            return false;
+        }else if(color1.getBlue() != color2.getBlue()){
+            return false;
+        }else if(color1.getGreen() != color2.getGreen()){
+            return false;
+        }else return color1.getAlpha() == color2.getAlpha();
+    }
+
+    public static int getIntFromColor(Color color){
+        return (color.getAlpha() << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue();
+    }
+
+    public static Color getColorFromInt(int color){
+
+        return new Color(
+                (color >> 16) & 0xff,
+                (color >> 8) & 0xff,
+                color & 0xff,
+                (color >> 24) & 0xff);
+
+    }
+
     public static void  log(Class className, Object ...o){
         System.out.print(className.getName());
         for (Object ob:
@@ -578,37 +668,55 @@ public class HPGui {
         }
         System.out.println();
     }
-    
-    
+
+    public static void log(Object ...o){
+
+        for (Object ob:
+                o) {
+
+            System.out.print(ob);
+            System.out.print(", ");
+
+        }
+        System.out.println();
+    }
+
+
+
+
     /*
     BACKGROUND COLOUR
     */
-    
-    public LinearGradientPaint getLinearGradientPaint(int width, 
-        float x1, float x2, Color c1, Color c2){
-        
+
+    public static LinearGradientPaint getLinearGradientPaint(int width,
+        float [] points, Color [] colors){
+
         Point2D start = new Point2D.Float(0, 0);
         Point2D end = new Point2D.Float(width, 0);
-        
-        float[] dist = {x1, x2};
-        
-        Color[] colors = {c1, c2};
-        
-     return new LinearGradientPaint(start, end, dist, colors);
+     return new LinearGradientPaint(start, end, points, colors);
+
     }
-    
+
+    public static float [] floats(float ...floats){
+        return floats;
+    }
+
+    public static Color [] colors(Color ...colors){
+        return colors;
+    }
+
     /*
     IMAGES and ICONS
      */
-    public Image getResizeImage(Image image, int width, int height){
+    public static Image getResizeImage(Image image, int width, int height){
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
             graphics2D.drawImage(image, 0, 0, width, height, null);
             graphics2D.dispose();
             return bufferedImage;
     }
-    
-    public Image getResizeImage(String path, String desc, int width, int height){
+
+    public static Image getResizeImage(String path, String desc, int width, int height){
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
             ImageIcon imageIcon = (ImageIcon)getIcon(path, desc);
@@ -616,8 +724,8 @@ public class HPGui {
             graphics2D.dispose();
             return bufferedImage;
     }
-    
-    public Image getResizeImage(String path, int width, int height){
+
+    public static Image getResizeImage(String path, int width, int height){
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
             ImageIcon imageIcon = (ImageIcon)getIcon(path, null);
@@ -627,30 +735,30 @@ public class HPGui {
     }
 
 
-    public Icon getIcon(String path, String desc){
-        URL url = getClass().getResource(path);
-        log(HPGui.class, getClass());
+    public static Icon getIcon(String path, String desc){
+        URL url = new HPGui().getClass().getResource(path);
+        log(HPGui.class, new HPGui().getClass());
         return new ImageIcon(url, desc);
     }
-    
-    public Image getImage(String path){
+
+    public static Image getImage(String path){
         return Toolkit.getDefaultToolkit().getImage(path);
     }
-    
-    public Image getImage2(String path){
-        return new ImageIcon(getClass().getResource(path)).getImage();
+
+    public static Image getImage2(String path){
+        return new ImageIcon(new HPGui().getClass().getResource(path)).getImage();
     }
-    
-    public ImageIcon getImageIcon(String path){
+
+    public static ImageIcon getImageIcon(String path){
         try {
-            return new ImageIcon(getClass().getResource(path));
+            return new ImageIcon(new HPGui().getClass().getResource(path));
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
         return null;
     }
 
-    public ImageIcon getImageIconFromSystem(String path){
+    public static ImageIcon getImageIconFromSystem(String path){
         try {
             return new ImageIcon(path);
         } catch (Exception e) {
@@ -659,30 +767,30 @@ public class HPGui {
         return null;
     }
 
-    public byte [] getBytesImage(String path){
+    public static byte [] getBytesImage(String path){
         try {
-            BufferedImage image = ImageIO.read(getClass().getResource(path));
+            BufferedImage image = ImageIO.read(new HPGui().getClass().getResource(path));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image, getExt(path), baos);
             baos.flush();
             return baos.toByteArray();
-            
+
         } catch (IOException ex) {
             Logger.getLogger(HPGui.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    
-    public ImageIcon getImageIcon(String path, int width, int height){
+
+    public static ImageIcon getImageIcon(String path, int width, int height){
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
             graphics2D.drawImage(getImageIcon(path).getImage(), 0, 0, width, height,null);
-            
+
             graphics2D.dispose();
             return new ImageIcon(bufferedImage);
     }
 
-    public ImageIcon getImageIconFromSystem(String path, int width, int height){
+    public static ImageIcon getImageIconFromSystem(String path, int width, int height){
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
         try {
@@ -696,35 +804,35 @@ public class HPGui {
 
         return new ImageIcon(bufferedImage);
     }
-    
-    public void setFrameIcon(JFrame frame, String path){
-        
+
+    public static void setFrameIcon(JFrame frame, String path){
+
         frame.setIconImage(getResizeImage(path, FRAME_ICON_SIZE, FRAME_ICON_SIZE));
     }
-   
-    
+
+
     /*
     String
     */
-    
-    public String textLimit(String data, int limit){
-        
+
+    public static String textLimit(String data, int limit){
+
         int len = data.length();
         if(limit >= len){
             return data;
         }
-        
+
         return data.substring(0, limit)+"...";
     }
-   
+
     /*
     Calculations
     */
-    
-    public Rectangle getCenterBound(Container container, Component component) throws Exception{
+
+    public static Rectangle getCenterBound(Container container, Component component) throws Exception{
         Dimension size = container.getPreferredSize();
         Dimension cSize = component.getPreferredSize();
-        
+
         if(size.height > cSize.height && size.width > cSize.width){
                 int x = (size.width - cSize.width)/2;
                 int y = (size.height - cSize.height)/2;
@@ -733,21 +841,21 @@ public class HPGui {
             throw new Exception("Component cannot be greater than container.");
         }
     }
-    public Dimension getDimenstions(Component [] components){
+    public static Dimension getDimenstions(Component [] components){
         int w = 0, h = 0;
         for (Component component : components) {
             w +=component.getWidth();
             h +=component.getHeight();
         }
-        
+
         return new Dimension(w, h);
     }
-    public int getRandomNo(int max){
+    public static int getRandomNo(int max){
         Random ran = new Random();
         return ran.nextInt(max);
     }
 
-    public String getRandomAlphabets(int max){
+    public static String getRandomAlphabets(int max){
         String [] alp = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f"
         , "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"};
@@ -759,33 +867,33 @@ public class HPGui {
         return res.toString();
     }
 
-    
-    public int getPercent(int value, int total){
-       return  (int)((double)((double)value/100)* (double)total);
+
+    public static int getPercent(int value, int total){
+       return  (int)(((double)value/100) * (double)total);
     }
     /*
     Dialogue
     */
-    
-    public void alert(Container parent, String message){
+
+    public static void alert(Container parent, String message){
        new Dialogue(parent, message, true);
     }
-    
-    class Dialogue extends JDialog implements ActionListener{
-        
+
+    static class Dialogue extends JDialog implements ActionListener{
+
         private String title = "Alert";
         private JDialog dialog = this;
-        
+
         public Dialogue(Container frame, String message) {
-           
+
            setSize(frame.getWidth()-16, frame.getHeight()-8);
            setLocation(frame.getX()+8, frame.getY());
            setUndecorated(true);
            setBackground(getColor(0, 0, 0, 0.3f));
         }
-        
+
         public Dialogue(Container frame, String message, boolean decoratedParent) {
-           
+
            setSize(frame.getWidth()-16, frame.getHeight()-39);
            setLocation(frame.getX()+8, frame.getY()+31);
            setLayout(new FlowLayout());
@@ -793,26 +901,26 @@ public class HPGui {
            setBackground(getColor(0, 0, 0, 0.3f));
            JPanel panel = simpleLayout(title, message);
             add(panel);
-            
+
             setVisible(true);
         }
-        
+
         public Dialogue(Container frame, Component component) {
-           
+
            setSize(frame.getWidth()-16, frame.getHeight()-8);
            setLocation(frame.getX()+8, frame.getY());
            setUndecorated(true);
            setBackground(getColor(0, 0, 0, 0.3f));
         }
-        
+
         public Dialogue(Container frame, Component component, boolean decoratedParent) {
-           
+
            setSize(frame.getWidth()-16, frame.getHeight()-39);
            setLocation(frame.getX()+8, frame.getY()+31);
            setUndecorated(true);
            setBackground(getColor(0, 0, 0, 0.3f));
         }
-           
+
        private JPanel simpleLayout(String title, String message){
            JPanel panel = new JPanel(){
                @Override
@@ -820,7 +928,7 @@ public class HPGui {
                    boxShadow(g, this, Color.WHITE, 0.3f, 2, 10);
                }
 
-               
+
                @Override
                public Border getBorder() {
                    return new EmptyBorder(10, 10, 10, 10);
@@ -830,21 +938,21 @@ public class HPGui {
                public Dimension getPreferredSize() {
                    return new Dimension(200, 200);
                }
-                             
+
            };
-           
+
            JLabel titleLabel = new JLabel(title);
            titleLabel.setFont(new Font(FontStandard, Font.BOLD, 14));
-           
+
            JLabel mesLabel = new JLabel(message);
            mesLabel.setFont(new Font(FontHandwriting, Font.BOLD, 12));
-           
+
            JButton close = new JButton("close");
             close.setOpaque(false);
             close.setActionCommand("close");
             close.addActionListener(this);
-            
-           
+
+
            panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
            panel.add(titleLabel);
            panel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -853,7 +961,7 @@ public class HPGui {
            panel.add(Box.createRigidArea(new Dimension(10, 0)));
            panel.add(Box.createHorizontalGlue());
            panel.add(close);
-           
+
            return panel;
        }
 
@@ -864,11 +972,11 @@ public class HPGui {
                 dialog.dispatchEvent(evt);
             }
         }
-       
-       
+
+
     }
-    
-    public void boxShadow(Graphics g, JComponent box, Color surfaceColor, float opacity, int size){
+
+    public static void boxShadow(Graphics g, JComponent box, Color surfaceColor, float opacity, int size){
         Graphics2D g2d = (Graphics2D)g;
         int offset = size;
         BufferedImage image = new BufferedImage(box.getWidth(), box.getHeight(), BufferedImage.BITMASK);
@@ -885,8 +993,8 @@ public class HPGui {
         g2d.drawImage(image, 0, 0, null);
         g2d.dispose();
     }
-    
-    public void boxShadow(Graphics g, JComponent box, Color surfaceColor, float opacity, int size, int radius){
+
+    public static void boxShadow(Graphics g, JComponent box, Color surfaceColor, float opacity, int size, int radius){
         Graphics2D g2d = (Graphics2D)g;
         int offset = size;
         BufferedImage image = new BufferedImage(box.getWidth(), box.getHeight(), BufferedImage.BITMASK);
@@ -903,16 +1011,19 @@ public class HPGui {
         g2d.drawImage(image, 0, 0, null);
         g2d.dispose();
     }
-    
+
+    public static Cursor getHandCursor(){
+        return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+    }
     /*
     FILE
     */
-    
-    public String getExt(String path){
+
+    public static String getExt(String path){
         int index = path.lastIndexOf(".");
         return path.substring(index);
     }
-    
+
     /*
     JFRAME
     */
@@ -930,7 +1041,7 @@ public class HPGui {
                 } catch (UnsupportedLookAndFeelException ex) {
                     ex.printStackTrace();
                 }
-                
+
                 }
             }
        public static void setTempFrame(Component component){
@@ -942,8 +1053,8 @@ public class HPGui {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
        }
-      
-    
+
+
      public static void setTempFrame(Component component, int w, int h){
        JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -956,8 +1067,8 @@ public class HPGui {
     /*
     TRAYICON
     */
-    
-    public TrayIcon addTray(String path){
+
+    public static TrayIcon addTray(String path){
         tray = new TrayIcon(getImage(path));
         tray.setImageAutoSize(true);
         try {
@@ -967,7 +1078,7 @@ public class HPGui {
         }
         return tray;
     }
-    public TrayIcon addTray(String path, ActionListener listener){
+    public static TrayIcon addTray(String path, ActionListener listener){
         tray = new TrayIcon(getImage(path));
         tray.setImageAutoSize(true);
         tray.addActionListener(listener);
@@ -982,8 +1093,8 @@ public class HPGui {
     SPring Layout
     */
     public static class Springer{
-     
-   
+
+
     public static void printSizes(Component c) {
 //        System.out.println("minimumSize = " + c.getMinimumSize());
 //        System.out.println("preferredSize = " + c.getPreferredSize());

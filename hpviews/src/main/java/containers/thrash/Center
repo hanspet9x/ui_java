@@ -1,0 +1,51 @@
+package containers;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class Center extends TransparentContainer{
+
+
+    public Center(Component component) {
+        this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        add(component);
+    }
+
+    public Center() {
+        this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+    }
+
+
+    @Override
+    public Component add(Component comp) {
+        TransparentContainer card  = new TransparentContainer();
+        card.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        card.add(comp);
+
+        JComponent jcomp = (JComponent)comp;
+        jcomp.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        Box box = new Box(BoxLayout.PAGE_AXIS);
+        box.add(Box.createVerticalGlue());
+        box.add(jcomp);
+        box.add(Box.createVerticalGlue());
+
+
+        return super.add(box);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+
+        Container container = getParent();
+
+        if(container.getName().contains("contentPane")){
+            int w = container.getWidth() - 10;
+            int h = container.getHeight() - 10;
+            return new Dimension(w, h);
+
+        }else{
+            return super.getParent().getPreferredSize();
+        }
+    }
+}

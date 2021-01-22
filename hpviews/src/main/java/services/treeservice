@@ -4,7 +4,7 @@ import controllers.OnTreeDoubleClicked;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import views.Card;
+import containers.Card;
 import views.UITreeExplorer;
 
 import java.awt.*;

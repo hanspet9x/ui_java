@@ -5,6 +5,7 @@
  */
 package views;
 
+import containers.Card;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import services.HPGui;
@@ -34,7 +35,7 @@ import javax.swing.event.MouseInputAdapter;
  *
  * @author Peter A. Akinlolu
  */
-public class FormField extends Card{
+public class FormField extends Card {
     
     FormField context = this;
     HPGui hp = new HPGui();

@@ -1,11 +1,11 @@
 package services;
 
+import containers.Card;
 import controllers.OnTreeDoubleClicked;
 import controllers.OnUITreeSelected;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import views.Card;
 import views.UITreeExplorer;
 
 import java.awt.*;
@@ -110,7 +110,7 @@ public class UITreeService {
                 data.getString(nameKey));
 //                    tree.getInnerCard().addMouseListener(this);
         tree.setMainTree(dataArray);
-        tree.getlIndicator().addMouseListener(new OnTreeCollapsible(tree));
+        tree.getRotate().addMouseListener(new OnTreeCollapsible(tree));
         tree.getLabel().addMouseListener(new OnLabelClicked(tree));
         tree.getIcon().addMouseListener(new OnLabelClicked(tree));
 
@@ -189,8 +189,10 @@ public class UITreeService {
 
                 if(owner.isCollapsed()){
                     showSubLevels(owner);
+                    owner.getRotate().animate(0, 90);
                 }else{
                     hideSubLevels(owner);
+                    owner.getRotate().animate(90, 0);
                 }
                 if(e.getClickCount() > 1){
                     showFolderContents(owner);

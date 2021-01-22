@@ -1,5 +1,7 @@
 package views;
 
+import animations.Rotate;
+import containers.Card;
 import controllers.OnUITreeExplorerUpdate;
 import org.json.JSONArray;
 import services.HPGui;
@@ -139,6 +141,7 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
         private JSONArray dirTree;
         private JLabel label;
         private JLabel icon;
+        private Rotate rotate;
 
         public Tree(int level, boolean isDirectory, String name) {
             this.level = level;
@@ -146,6 +149,8 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
             this.name = name;
             this.setToolTipText(name);
             this.lIndicator = new JLabel(hp.getImageIcon("/views/explorer/caret.png", 10, 10));
+            this.rotate = new Rotate(lIndicator);
+            this.rotate.setRate(10);
             this.label = new JLabel(this.name);
             build();
         }
@@ -167,9 +172,9 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
             add(innerCard);
         }
 
-        private JLabel getJIndicator(){
-            hp.setRightPadding(lIndicator, 8);
-            return lIndicator;
+        private Rotate getJIndicator(){
+            hp.setRightPadding(rotate, 8);
+            return rotate;
         }
 
         private JLabel getJLabel(){
@@ -213,6 +218,10 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
 
         public boolean isHasChildren() {
             return hasChildren;
+        }
+
+        public Rotate getRotate() {
+            return rotate;
         }
 
         public void setHasChildren(boolean hasChildren) {
@@ -267,7 +276,7 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
      * Explorer Browser
      */
     @SuppressWarnings("rawtypes")
-    public static class Explorer extends Card{
+    public static class Explorer extends Card {
 
         private String treeData;
         private final Card container;

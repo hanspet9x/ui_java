@@ -1,7 +1,8 @@
 package views;
 
+import containers.Card;
+
 import javax.swing.*;
-import javax.swing.text.View;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class SelectView extends Card{
+public class SelectView extends Card {
 
     /**
      * The selector array values;

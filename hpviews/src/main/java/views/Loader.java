@@ -1,5 +1,7 @@
 package views;
 
+import containers.Card;
+
 import javax.swing.*;
 import java.awt.*;
 

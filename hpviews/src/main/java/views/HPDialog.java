@@ -6,6 +6,7 @@
 package views;
 
 
+import containers.Card;
 import services.HPGui;
 import java.awt.Color;
 import java.awt.Dialog;

@@ -1,0 +1,155 @@
+package views;
+
+import controllers.OnOverflowScroll;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+
+public class ScrollerView extends JPanel {
+
+    int width = 250;
+    int breadth = 10;
+    int contentSize = 350;
+    int moved = 0;
+    int scrollBarLength = 0;
+    int barArc = 20;
+    private ScrollPolicy policy = ScrollPolicy.VERTICAL;
+
+    public ScrollerView(int width, int breadth, int contentSize, ScrollPolicy policy) {
+        this.width = width;
+        this.breadth = breadth;
+        this.contentSize = contentSize;
+        this.policy = policy;
+        common();
+    }
+
+
+    public ScrollerView() {
+        common();
+    }
+
+    public ScrollerView(ScrollPolicy policy) {
+        this.policy = policy;
+        common();
+    }
+
+    private void common(){
+        setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        if(policy == ScrollPolicy.HORIZONTAL){
+            BarHorizontal barHorizontal = new BarHorizontal();
+            add(barHorizontal);
+        }else{
+            BarVertical barVertical = new BarVertical();
+            add(barVertical);
+        }
+    }
+
+
+
+
+    private class BarVertical extends Canvas{
+
+        private BufferedImage image = null;
+
+        public BarVertical() {
+
+            scrollBarLength = breadth - (contentSize - breadth);
+
+            addMouseMotionListener(new MouseAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+
+                    if(e.getY() < (breadth - scrollBarLength) && e.getY() > 0){
+                        moved = e.getY();
+                        repaint();
+                        onOverflowScroll.scroll(moved);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(width, breadth);
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            Graphics2D graphics2D = (Graphics2D)g;
+            if(image == null){
+                image = new BufferedImage(width, scrollBarLength, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D imageGraphics2D = image.createGraphics();
+                imageGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                imageGraphics2D.setColor(Color.GRAY);
+                imageGraphics2D.fillRect(0, 0, width, scrollBarLength);
+                graphics2D.drawImage(image, 0, 0, null);
+            }else{
+                graphics2D.drawImage(image, 0, moved, null);
+            }
+
+
+
+
+        }
+    }
+
+    private class BarHorizontal extends Canvas{
+
+        private BufferedImage image = null;
+
+        public BarHorizontal() {
+            scrollBarLength = width - (contentSize - width);
+            addMouseMotionListener(new MouseAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    if(e.getX() < (width - scrollBarLength) && e.getX() > 0){
+                        moved = e.getX();
+                        repaint();
+                        onOverflowScroll.scroll(moved);
+                    }
+                }
+            });
+
+
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(width, breadth);
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            Graphics2D graphics2D = (Graphics2D)g;
+            if(image == null){
+                image = new BufferedImage(scrollBarLength, breadth, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D imageGraphics2D = image.createGraphics();
+                imageGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                imageGraphics2D.setColor(Color.GRAY);
+                imageGraphics2D.fillRect(0, 0, scrollBarLength, breadth);
+                graphics2D.drawImage(image, 0, 0, null);
+            }else{
+                graphics2D.drawImage(image, moved, 0, null);
+            }
+
+
+
+
+        }
+    }
+
+
+    public enum ScrollPolicy{
+        HORIZONTAL, VERTICAL
+    }
+
+    public OnOverflowScroll onOverflowScroll;
+
+    public void onScroll(OnOverflowScroll onOverflowScroll){
+        this.onOverflowScroll = onOverflowScroll;
+    }
+}

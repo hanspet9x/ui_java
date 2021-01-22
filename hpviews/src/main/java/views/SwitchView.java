@@ -5,6 +5,8 @@
  */
 package views;
 
+import containers.Card;
+
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -24,7 +26,7 @@ import javax.swing.Timer;
  *
  * @author Peter A. Akinlolu
  */
-public class SwitchView extends Card{
+public class SwitchView extends Card {
     
 private final int w = 38;
 private final int h = 20;

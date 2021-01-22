@@ -1,7 +1,7 @@
 package services;
 
+import containers.Card;
 import controllers.OnFilesPicked;
-import views.Card;
 import views.ExplorerIcon;
 import views.UIFilePicker;
 
@@ -44,7 +44,10 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
     private final boolean watch;
 
     private boolean startWatch = true;
+
     private Map<Path, ExplorerIcon> selectedFiles = new HashMap<>();
+
+    private List<ExplorerIcon> explorerCopy = new ArrayList<>();
 
     public UIFilePickerService(UIFilePicker uiFilePicker) {
 
@@ -56,6 +59,7 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
         JButton bSelect = uiFilePicker.getbSelectButton();
 
         bSelect.addActionListener(this);
+        uiFilePicker.getbSelectAll().addActionListener(this);
 
         this.lSelected = uiFilePicker.getlSelected();
         this.lCurrentPath = uiFilePicker.getlCurrentPath();
@@ -105,7 +109,14 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
         setIconParam(Paths.get(previousPath), true);
     }
 
+    /**
+     * Add ExplorerIcon to iconsContainer.
+     * keep a copy of icons added to a explorerCopy per copy.
+     * @param source Path
+     * @throws IOException
+     */
     private void add(Path source) throws IOException {
+        explorerCopy.clear();
         Files.newDirectoryStream(source)
             .forEach(path -> setIconParam(path, false));
     }
@@ -119,6 +130,8 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
 
 //        ExplorerIcon icon = new ExplorerIcon(path, isLevelUp);
         icon.addMouseListener(this);
+
+        explorerCopy.add(icon);
 
         Card wrapper = new Card(new FlowLayout(FlowLayout.CENTER));
         wrapper.setPadding(2);
@@ -195,6 +208,10 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
         lSelected.setText(selectedFiles.size()+" Selected.");
     }
 
+    /*
+    *
+    * deselect previously selected, empty map, add the new icon.
+    * */
     private void oneFileOption(ExplorerIcon icon) {
         selectedFiles.values().forEach(mIcon -> setIconBg(false, mIcon));
         selectedFiles = new HashMap<>();
@@ -274,6 +291,23 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        /*
+        * add explorericon file to selected file
+        * */
+        if(e.getActionCommand().equals("s2")){
+            selectedFiles = new HashMap<>();
+            explorerCopy.forEach(explorerIcon -> {
+                if(!explorerIcon.isDirectory()){
+                    selectedFiles.put(explorerIcon.getPath(), explorerIcon);
+                    setIconBg(true, explorerIcon);
+                }
+            });
+
+            lSelected.setText(selectedFiles.size()+" Selected.");
+        }
+
+        //trigger interface;
+
         if(selectedFiles.size() > 0){
             if(onFilesPicked != null)
                 onFilesPicked.picked(selectedFiles);

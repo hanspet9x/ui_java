@@ -1,5 +1,6 @@
 package views;
 
+import containers.Card;
 import services.HPGui;
 
 import javax.swing.*;

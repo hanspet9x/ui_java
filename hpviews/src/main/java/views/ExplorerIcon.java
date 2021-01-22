@@ -1,5 +1,6 @@
 package views;
 
+import containers.Card;
 import org.json.JSONArray;
 import services.ExplorerIconService;
 import services.HPGui;
@@ -14,7 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @SuppressWarnings("rawtypes")
-public class ExplorerIcon extends Card{
+public class ExplorerIcon extends Card {
 
     private String name;
     private boolean isDirectory;

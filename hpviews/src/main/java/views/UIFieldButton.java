@@ -1,18 +1,18 @@
 package views;
 
+import containers.Card;
 import services.HPGui;
 import services.UIFieldButtonService;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 @SuppressWarnings("rawtypes")
-public class UIFieldButton extends Card{
+public class UIFieldButton extends Card {
     private final JTextField field;
     private final ImageIcon icon;
     private final int height;
+    private final int width;
     private final String placeholder;
     private String  placeholderColor = "#cccccc";
     private String  color = "#666666";
