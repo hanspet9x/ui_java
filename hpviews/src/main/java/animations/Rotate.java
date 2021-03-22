@@ -2,7 +2,11 @@ package animations;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.function.Consumer;
 
 @SuppressWarnings("rawtypes")
 public class Rotate extends Transform {
@@ -64,6 +68,15 @@ public class Rotate extends Transform {
         this.fromDegree = fromDegree;
         this.toDegree = toDegree;
         animate();
+    }
+
+    public void onClick(Consumer<MouseEvent> eventConsumer){
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                eventConsumer.accept(e);
+            }
+        });
     }
 
     public void stop(){

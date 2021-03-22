@@ -1,143 +1,314 @@
 package views;
 
-import containers.Card;
+import containers.*;
+import controllers.OnUIViewScrolled;
 import controllers.OnUIViewScroller;
+import model.FlexAlignment;
+import model.FlexDirection;
 import services.HPGui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.util.Arrays;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 @SuppressWarnings("rawtypes")
-public class UIViewScroller extends Card implements OnUIViewScroller {
+public class UIViewScroller implements OnUIViewScroller {
 
-    private Card header;
-    private Card footer;
-    private final Card body;
 
-    private final HPGui hp;
+    private int index = 0;
+    private final Map<String, Integer> holderMap = new HashMap<>();
+    private final Flex rowWrapper = new Flex(FlexDirection.ROW, FlexAlignment.LEFT){
+        @Override
+        public boolean isValidateRoot() {
+            rowWrapperValidated();
+            return super.isValidateRoot();
+        }
+    };
+
+    private int currentPageIndex = 0;
+    private boolean animate = false;
+    private boolean widthDefined = false;
+    private int maxComponentWidth = 0, maxComponentHeight = 0;
+    private Map<String, Component> contents;
+
+    private final Card2 parentWrapper = new Card2();
+
+    private final Card wrapper = new Card();
+    private int padding = 0, width = 0, height = 0;
+
+    private boolean expandView = true;
 
     public UIViewScroller(int width, int height) {
-        super(new BorderLayout());
-        hp = new HPGui();
-        setPadding(10);
-        setBackground(Color.green);
-//        hp.setAllSizes(this, width, height);
-//        this.setBackground(Color.GREEN);
-        this.body = new Card();
+        this.width = width;
+        this.height = height;
+        widthDefined = true;
+        common();
+    }
+
+    public UIViewScroller(Dimension dimension) {
+        this.width = dimension.width;
+        this.height = dimension.height;
+        widthDefined = true;
+        common();
+    }
+
+    public UIViewScroller() {
+
+        contents = new HashMap<>();
+        common();
+        wrapper.addComponentListener(adjustLayoutForUndefinedWidth());
+    }
+
+    private void common(){
+
+        parentWrapper.setLayout(new BorderLayout());
+        parentWrapper.setPadding(padding);
+
+        wrapper.setBackground(HPGui.getColTranslucent());
+        wrapper.setPadding(0);
+
+        if(widthDefined){
+            HPGui.setAllSizes(parentWrapper, width, height);
+            HPGui.setAllSizes(wrapper, width, height);
+        }
 
     }
 
+    private void rowWrapperValidated() {
 
-
-
-    public UIViewScroller build(){
-
-
-        body.setLayout(new BoxLayout(body, BoxLayout.LINE_AXIS));
-
-        body.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                Dimension d = e.getComponent().getSize();
-
-                hp.setAllSizes(body, d.width*30, d.height);
-                System.out.println(d);
-                body.removeComponentListener(this);
-
-//                setScrollCardSizes(e);
-            }
-        });
-
-        add(body, BorderLayout.CENTER);
-        return this;
+        new Timer(2, e -> {
+            setPageView(currentPageIndex);
+            ((Timer)e.getSource()).stop();
+        }).start();
     }
-
-    private void setScrollCardSizes(ComponentEvent e){
-
-        Arrays.stream(body.getComponents())
-                .forEach(scrollCard -> {
-//                    hp.setAllSizes(scrollCard, e.getComponent().getSize());
-                });
-    }
-
 
     @Override
     public void first() {
 
+        setPageView(0);
     }
 
     @Override
     public void last() {
 
+        setPageView(holderMap.size()-1);
     }
 
     @Override
     public void next() {
+        if(currentPageIndex < holderMap.size()-1){
+            setPageView(currentPageIndex + 1);
+        }
 
     }
 
     @Override
-    public void scrollTo(int scrollCardIndex) {
-
+    public void previous() {
+        if(currentPageIndex > 0){
+            setPageView(currentPageIndex - 1);
+        }
     }
 
     @Override
-    public void scrollTo(String scrollCardName) {
-
+    public void scrollTo(int index) {
+        if(holderMap.containsValue(index)){
+            setPageView(index);
+        }
     }
 
     @Override
-    public void addScrollCard(ScrollCard scrollCard) {
-        scrollCard.setIndex(body.getComponentCount());
-        body.add(scrollCard);
+    public void scrollTo(String id) {
+
+        setPageView(holderMap.get(id)-1);
     }
 
     @Override
-    public Component add(Component comp) {
-        ScrollCard card = new ScrollCard(comp.getName());
-        return super.add(card);
+    public void addComponent(Component component, String id) {
+        if(widthDefined){
+
+            if(!expandView){
+
+                rowWrapper.addComponent(new ContentHolder(component));
+
+            }else{
+
+                component.setPreferredSize(parentWrapper.getPreferredSize());
+                rowWrapper.addComponent(component);
+            }
+            holderMap.put(id, ++index);
+
+        }else{
+            maxComponentWidth = Math.max(maxComponentWidth, component.getPreferredSize().width);
+            maxComponentHeight = Math.max(maxComponentHeight, component.getPreferredSize().height);
+            contents.put(id, component);
+        }
+    }
+
+
+    public Card2 build(){
+        wrapper.add(rowWrapper.build());
+        parentWrapper.add(wrapper);
+        return parentWrapper;
+
+    }
+
+    boolean resized = false;
+
+    private ComponentAdapter adjustLayoutForUndefinedWidth(){
+
+        return new ComponentAdapter(){
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+
+                    if (wrapper.getParent().getParent().getLayout() instanceof BorderLayout){
+
+                        adjustViews(new Dimension(wrapper.getWidth(), wrapper.getHeight()));
+
+                    }else{
+                        adjustViews(new Dimension(maxComponentWidth, maxComponentHeight));
+                    }
+            }
+        };
+    }
+
+    private void adjustViews(Dimension dim){
+
+        rowWrapper.removeAll();
+
+        HPGui.setAllSizes(rowWrapper, contents.size() * dim.width, dim.height);
+
+        contents.forEach((key, component) -> {
+
+            if(!expandView){
+
+                rowWrapper.addComponent(new ContentHolder(component, dim));
+
+            }else{
+
+                HPGui.setAllSizes(component, dim);
+                rowWrapper.addComponent(component);
+            }
+            holderMap.putIfAbsent(key, ++index);
+        });
+
+        rowWrapper.revalidate();
+        wrapper.removeAll();
+        wrapper.add(rowWrapper.build());
+        resized = true;
+    }
+
+    private void setPageView(int x){
+        final int width = widthDefined ? wrapper.getPreferredSize().width : wrapper.getWidth();
+        if(!animate){
+            currentPageIndex = x;
+            rowWrapper.setLocation((-x * width), 0);
+
+        }else{
+            animate(x, width);
+        }
+
+        //fire onScrolled of UIViewScroller
+        if(onUIViewScrolledList.size() > 0){
+            holderMap.forEach((s, i) -> {
+                if(i == x+1){
+                    onUIViewScrolledList.forEach(e -> e.scrolled(s));
+                }
+            });
+
+        }
     }
 
     @Override
-    public Component add(Component comp, int index) {
-        ScrollCard card = new ScrollCard(comp.getName());
-        card.setIndex(body.getComponentCount());
-        return super.add(card, body.getComponentCount());
+    public void setExpandValue(Boolean expand) {
+
     }
 
-    public static class ScrollCard extends Card {
+    private void animate(int x, int width){
+         final int moveSize = 20;
+        AtomicInteger integer = new AtomicInteger(currentPageIndex * width);
+        final int pos = (-x * width);
 
-        private int index;
-        private String name;
+        new Timer(0, e -> {
+            if(x > currentPageIndex ){
+                //100 < 200
+                if(integer.get() < x * width){
+                    rowWrapper.setLocation(- integer.addAndGet(moveSize), 0);
+                }else{
+                    rowWrapper.setLocation(pos, 0);
+                    ((Timer)e.getSource()).stop();
+                    currentPageIndex = x;
+                }
+            }else{
+                //200 > 100 - from 200 to 100
+                if(integer.get() >  x * width){
+                    rowWrapper.setLocation(-integer.addAndGet(-moveSize), 0);
+                }else{
+                    rowWrapper.setLocation(pos, 0);
+                    ((Timer)e.getSource()).stop();
+                    currentPageIndex = x;
+                }
 
-        public ScrollCard(String name) {
-            this.name = name;
+            }
+        }).start();
+    }
 
-            setPadding(10);
-            setBorderRadius(10);
-            setBackground(Color.LIGHT_GRAY);
+    public void setAnimate(boolean animate) {
+        this.animate = animate;
+    }
+
+    public void setBgColor(Color bgColor){
+        parentWrapper.setBackground(bgColor);
+    }
+
+    public void setPadding(int padding){
+        this.padding = padding;
+        common();
+    }
+
+    public void setExpandView(boolean expandView) {
+        this.expandView = expandView;
+    }
+
+    public boolean isExpandView() {
+        return expandView;
+    }
+
+    public int getCurrentPageIndex() {
+        return currentPageIndex;
+    }
+
+    public void setCurrentPageIndex(int currentPageIndex) {
+        this.currentPageIndex = currentPageIndex;
+    }
+
+    private class ContentHolder extends TransparentContainer {
+
+        public ContentHolder(Component component) {
+
+            HPGui.setAllSizes(this, wrapper.getPreferredSize());
+            add(component);
         }
 
-
-        @Override
-        public String getName() {
-            return name;
+        public ContentHolder(Component component, Dimension dim) {
+            HPGui.setAllSizes(this, dim);
+            add(component);
         }
 
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
+    }
 
-        public int getIndex() {
-            return index;
-        }
+//    OnUIViewScrolled onUIViewScrolled = null;
 
-        public void setIndex(int index) {
-            this.index = index;
-        }
+    static java.util.List<OnUIViewScrolled> onUIViewScrolledList = new ArrayList<>();
+
+    public static void setOnUIViewScrolled(OnUIViewScrolled onUIViewScrolledImpl) {
+       if(!onUIViewScrolledList.contains(onUIViewScrolledImpl)){
+           onUIViewScrolledList.add(onUIViewScrolledImpl);
+       }
     }
 }

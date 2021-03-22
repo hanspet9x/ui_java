@@ -21,6 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -34,6 +37,8 @@ import javax.imageio.ImageIO;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -45,6 +50,7 @@ public  class HPGui {
 
     private static final int FRAME_EXTRA_WIDTH = 16;
     private static final int FRAME_ICON_SIZE = 60;
+    private static final int TASK_BAR_HEIGHT = 40;
     private static SystemTray systemTray;
     private static TrayIcon tray;
     public static String FontStandard = "Mongolian Baiti";
@@ -57,14 +63,22 @@ public  class HPGui {
 
     public static String FontComplex = "Harrington";
 
-    public static final java.util.List<String> imgExtensions =
-            java.util.List.of(".jpg", ".jpeg", ".png", ".gif");
+    public static final List<String> imgExtensions = List.of(".jpg", ".jpeg", ".png", ".gif", ".tiff");
 
+    public static final List<String> audioExtensions = List.of(".ogg", ".mp3", ".m4a", ".wav", ".mpeg-4", ".midi", ".wma", ".aac");
+
+    public static final List<String> videoExtensions = List.of(".mp4", ".avi", ".mov", ".mkv", ".flv", ".swf");
+
+    public static final List<String> documentExtensions = List.of(".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx");
 
     public HPGui() {
        if(systemTray.isSupported()){
            systemTray = SystemTray.getSystemTray();
        }
+    }
+
+    public static void init(){
+        registerFonts();
     }
 
     public static void registerFonts(){
@@ -91,11 +105,11 @@ public  class HPGui {
         return "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
     }
 
-    public static Dimension getScreenSize(){
+/*    public static Dimension getScreenSize(){
         Dimension toolkit = Toolkit.getDefaultToolkit().getScreenSize();
         return new Dimension(toolkit.width, toolkit.height - 40);
 
-    }
+    }*/
     public static void setPrefSize(Component comp, Dimension dim){
         comp.setPreferredSize(dim);
     }
@@ -118,11 +132,11 @@ public  class HPGui {
 
     public static Component setAllSizes(Component comp, int width, int height){
         Dimension dim = new Dimension(width, height);
-        comp.setMinimumSize(dim);
-        comp.setMaximumSize(dim);
-        comp.setPreferredSize(dim);
-        comp.setSize(dim);
-        return comp;
+        return setAllSizes(comp, dim);
+    }
+
+    public static Component setAllSizes(Component comp, Dimension dim, int difference){
+        return setAllSizes(comp, dim.width - difference, dim.height - difference);
     }
 
     public static Component setAllWidths(Component comp, int width){
@@ -143,7 +157,26 @@ public  class HPGui {
         return comp;
     }
 
+    public static Dimension getDimensionReduced(Dimension dim, int difference){
+        return new Dimension(dim.width - difference, dim.height - difference);
+    }
 
+    public static boolean compareDimensions(Dimension dim1, Dimension dim2){
+        return dim1.width == dim2.width && dim1.height == dim2.height;
+    }
+
+    public static Dimension getScreenSize(){
+        DisplayMode displayMode = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode();
+        return new Dimension(displayMode.getWidth(), displayMode.getHeight() - TASK_BAR_HEIGHT);
+    }
+
+    public static int getA4Height(int width){
+        return (int)(width * 1.4142);
+    }
+
+    public static int getA4Width(int height){
+        return (int)(height / 1.4142);
+    }
 
     /*
     SWING & Component
@@ -248,6 +281,10 @@ public  class HPGui {
         return twoRows(one, two, 0, 0);
     }
 
+    public static Component getBox(int w, int h){
+        return Box.createRigidArea(new Dimension(w, h));
+    }
+
     public static JScrollPane getScrollPane(JComponent view, int width, int height){
         JScrollPane pane = new JScrollPane(view);
         pane.setOpaque(false);
@@ -322,6 +359,7 @@ public  class HPGui {
         card.setPadding(0);
         return card;
     }
+
 
 
 
@@ -539,6 +577,31 @@ public  class HPGui {
     }
 
 
+    /*Font*/
+
+    public static Font getFontStandard(int fontSize){
+        return new Font(HPGui.FontStandard, Font.PLAIN, fontSize);
+    }
+
+    public static Font getFontStandardBold(int fontSize){
+        return new Font(HPGui.FontStandard, Font.BOLD, fontSize);
+    }
+
+    public static Font getFontHead(int fontSize){
+        return new Font(HPGui.FontHead, Font.PLAIN, fontSize);
+    }
+
+    public static Font getFontHead2(int fontSize){
+        return new Font(HPGui.FontHead2, Font.PLAIN, fontSize);
+    }
+
+    public static Font getFontText(int fontSize){
+        return new Font(HPGui.FontText, Font.PLAIN, fontSize);
+    }
+
+    public static Font getFontWriting(int fontSize){
+        return new Font(HPGui.FontHandwriting, Font.PLAIN, fontSize);
+    }
 
     /*
     COLORS
@@ -644,8 +707,18 @@ public  class HPGui {
         }else return color1.getAlpha() == color2.getAlpha();
     }
 
+    public static void hasAlpha2(Color color){
+        HPGui.log(color.getAlpha(), color.getRed(), color.getGreen(), color.getBlue());
+    }
+
     public static int getIntFromColor(Color color){
+
         return (color.getAlpha() << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue();
+    }
+
+    public static int getIntFromColor(Color color, int alpha){
+
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha).getRGB();
     }
 
     public static Color getColorFromInt(int color){
@@ -657,6 +730,13 @@ public  class HPGui {
                 (color >> 24) & 0xff);
 
     }
+
+    public static Color getRandomColor(){
+        return new Color(getRandomNo(255), getRandomNo(255), getRandomNo(255));
+    }
+
+
+
 
     public static void  log(Class className, Object ...o){
         System.out.print(className.getName());
@@ -734,6 +814,11 @@ public  class HPGui {
             return bufferedImage;
     }
 
+    public static ImageIcon getImageIconFromImage(Image image){
+        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        bufferedImage.getGraphics().drawImage(image, 0, 0, null);
+        return new ImageIcon(bufferedImage);
+    }
 
     public static Icon getIcon(String path, String desc){
         URL url = new HPGui().getClass().getResource(path);
@@ -805,6 +890,20 @@ public  class HPGui {
         return new ImageIcon(bufferedImage);
     }
 
+    public static String addSlashToImagePath(String path){
+        if(!Character.toString(path.charAt(0)).equals("/") && !Character.toString(path.charAt(0)).equals("\\")){
+            return File.separator+path;
+        }
+        return path;
+    }
+
+    public static String removeSlashFromImage(String path){
+        if(Character.toString(path.charAt(0)).equals("/") || Character.toString(path.charAt(0)).equals("\\")){
+            return path.substring(1);
+        }
+        return path;
+    }
+
     public static void setFrameIcon(JFrame frame, String path){
 
         frame.setIconImage(getResizeImage(path, FRAME_ICON_SIZE, FRAME_ICON_SIZE));
@@ -841,6 +940,7 @@ public  class HPGui {
             throw new Exception("Component cannot be greater than container.");
         }
     }
+
     public static Dimension getDimenstions(Component [] components){
         int w = 0, h = 0;
         for (Component component : components) {
@@ -850,6 +950,7 @@ public  class HPGui {
 
         return new Dimension(w, h);
     }
+
     public static int getRandomNo(int max){
         Random ran = new Random();
         return ran.nextInt(max);
@@ -1020,12 +1121,21 @@ public  class HPGui {
     */
 
     public static String getExt(String path){
-        int index = path.lastIndexOf(".");
-        return path.substring(index);
+        String ext = path.substring(path.lastIndexOf("."));
+        return ext.toLowerCase();
     }
 
+    public static boolean isFile(String path){
+        if(path.lastIndexOf(".") == -1){
+            return false;
+        }else{
+            return getExt(path).length() >= 3;
+        }
+    }
+
+
     /*
-    JFRAME
+    JFrame
     */
        public static void setLookAndFeel(String name){
         for (UIManager.LookAndFeelInfo installedLookAndFeel : UIManager.getInstalledLookAndFeels()) {
@@ -1078,6 +1188,7 @@ public  class HPGui {
         }
         return tray;
     }
+
     public static TrayIcon addTray(String path, ActionListener listener){
         tray = new TrayIcon(getImage(path));
         tray.setImageAutoSize(true);
@@ -1272,8 +1383,61 @@ public  class HPGui {
         pCons.setConstraint(SpringLayout.EAST, x);
     }
 }
-    
-    
+
+
+    public static class filter implements DirectoryStream.Filter<Path> {
+
+        private final FilterType filterType;
+
+        public filter(FilterType filterType) {
+            this.filterType = filterType;
+        }
+
+        @Override
+        public boolean accept(Path entry) throws IOException {
+
+            if(!Files.isDirectory(entry)){
+                switch (filterType){
+
+                    case Images -> {
+
+                        return imgExtensions.contains(HPGui.getExt(entry.toString()));
+                    }
+                    case Videos -> {
+                        return videoExtensions.contains(HPGui.getExt(entry.toString()));
+                    }
+                    case Pdfs -> {
+                        return HPGui.getExt(entry.toString()).equals(".pdf");
+                    }
+                    case Docs -> {
+                        return documentExtensions.contains(HPGui.getExt(entry.toString()));
+                    }
+
+                }
+            }
+            return false;
+        }
+    }
+
+    public static boolean isImage(String path){
+        return imgExtensions.contains(HPGui.getExt(path));
+    }
+
+    public static boolean isAudio(String path){
+        return audioExtensions.contains(HPGui.getExt(path));
+    }
+
+    public static boolean isVideo(String path){
+        return videoExtensions.contains(HPGui.getExt(path));
+    }
+
+    public static boolean isPdf(String path){
+        return HPGui.getExt(path).equals(".pdf");
+    }
+
+    public enum FilterType{
+        Images, Videos, Pdfs, Docs
+    }
     
 }
 

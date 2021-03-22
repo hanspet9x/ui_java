@@ -6,28 +6,20 @@
 package views;
 
 import containers.Card;
+import controllers.OnFormOptions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import services.HPGui;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Font;
+
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.Array;
 import java.util.*;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
+import java.util.List;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 
@@ -36,12 +28,14 @@ import javax.swing.event.MouseInputAdapter;
  * @author Peter A. Akinlolu
  */
 public class FormField extends Card {
-    
+
+
     FormField context = this;
     HPGui hp = new HPGui();
     
     private JLabel label = null;
     private JTextField textField = null;
+    private JLabel fetchNameLabel = null;
     private JTextArea textArea = null;
     private JPasswordField passwordField = null;
     private JComboBox<Object> comboBox = null;
@@ -72,6 +66,7 @@ public class FormField extends Card {
     private int fieldBorderRadius = 0;
     private Color fieldBoxShadow = null;
     private final int innerBorderPad = 5;
+    private FormOptionType formOptionType = FormOptionType.JSON_ARRAY;
 
 
     public FormField() {
@@ -191,10 +186,118 @@ public class FormField extends Card {
         this.imageIcon = icon;
         this.comBoxData = comboBoxData;
         this.fieldLength = fieldLength;
+
         conditions();
-        
     }
 
+    public FormField(String labelText, ImageIcon icon, Object [] comboBoxData, int fieldLength,
+                     String comboFetchName,
+                     MouseAdapter adapter) {
+        this.labelText = labelText;
+        this.formType = FormType.COMBOBOX;
+        this.imageIcon = icon;
+        this.comBoxData = comboBoxData;
+        this.fieldLength = fieldLength;
+        this.fetchNameLabel = new JLabel(comboFetchName);
+        this.fetchNameLabel.addMouseListener(adapter);
+        this.setFetchNameLabelView(fetchNameLabel);
+        conditions();
+    }
+
+    public FormField(String labelText, Object [] comboBoxData, int fieldLength,
+                     String comboFetchName,
+                     MouseAdapter adapter) {
+        this.labelText = labelText;
+        this.formType = FormType.COMBOBOX;
+        this.comBoxData = comboBoxData;
+        this.fieldLength = fieldLength;
+        this.fetchNameLabel = new JLabel(comboFetchName);
+        this.fetchNameLabel.addMouseListener(adapter);
+        this.setFetchNameLabelView(fetchNameLabel);
+        conditions();
+    }
+
+    public FormField(String labelText, Object [] comboBoxData,
+                     String comboFetchName,
+                     MouseAdapter adapter) {
+        this.labelText = labelText;
+        this.formType = FormType.COMBOBOX;
+        this.comBoxData = comboBoxData;
+        this.fetchNameLabel = new JLabel(comboFetchName);
+        this.fetchNameLabel.addMouseListener(adapter);
+        this.setFetchNameLabelView(fetchNameLabel);
+        conditions();
+    }
+
+    public FormField(String labelText, ImageIcon icon, Object [] comboBoxData, int fieldLength,
+                     String comboFetchName, OnFormOptions formOptions) {
+        this.labelText = labelText;
+        this.formType = FormType.COMBOBOX;
+        this.imageIcon = icon;
+        this.comBoxData = comboBoxData;
+        this.fieldLength = fieldLength;
+        this.fetchNameLabel = new JLabel(comboFetchName);
+        setOptionFiled(fetchNameLabel, formOptions);
+
+        conditions();
+    }
+
+    public FormField(String labelText, ImageIcon icon, Object [] comboBoxData, String comboFetchName,
+                     OnFormOptions formOptions) {
+        this.labelText = labelText;
+        this.formType = FormType.COMBOBOX;
+        this.imageIcon = icon;
+        this.comBoxData = comboBoxData;
+        this.fetchNameLabel = new JLabel(comboFetchName);
+        setOptionFiled(fetchNameLabel, formOptions);
+        conditions();
+    }
+
+    public FormField(String labelText,Object [] comboBoxData, String comboFetchName, OnFormOptions formOptions) {
+        this.labelText = labelText;
+        this.formType = FormType.COMBOBOX;
+        this.comBoxData = comboBoxData;
+        this.fetchNameLabel = new JLabel(comboFetchName);
+        setOptionFiled(fetchNameLabel, formOptions);
+        conditions();
+    }
+
+    private void setFetchNameLabelView(JLabel fetchNameLabel){
+        fetchNameLabel.setFont(new Font(HPGui.FontStandard, Font.PLAIN, 10));
+        fetchNameLabel.setForeground(Color.GRAY);
+        fetchNameLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+    private void setOptionFiled(JLabel fetchNameLabel, OnFormOptions formOptions){
+        fetchNameLabel.setFont(new Font(HPGui.FontStandard, Font.PLAIN, 10));
+        fetchNameLabel.setForeground(Color.GRAY);
+        fetchNameLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        this.fetchNameLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(formOptionType == FormOptionType.OBJECT){
+                    Object [] obj = formOptions.getObjects();
+                    if(obj.length > 0){
+                        setObject(obj);
+                    }
+                }else{
+                    JSONArray array = formOptions.getArrays();
+                    if(array.length() > 0){
+                        setObject(array);
+                    }
+                }
+            }
+        });
+    }
+
+
+    public enum FormOptionType{
+        OBJECT, JSON_ARRAY
+    }
+
+    public void setOnFormOptionDataType(FormOptionType type){
+        this.formOptionType = type;
+    }
     public enum FormType{
         TEXTFIELD, TEXTAREA, PASSWORD, COMBOBOX;
     }
@@ -217,14 +320,15 @@ public class FormField extends Card {
             join.setBoxShadow(fieldBoxShadow);
         }
         if(formType == FormType.TEXTAREA){
-          hp.setAllSizes(join, fieldLength, textAreaHeight);  
+          HPGui.setAllSizes(join, fieldLength, textAreaHeight);  
         }else{
-            hp.setAllSizes(join, fieldLength, fieldHeight);
+            HPGui.setAllSizes(join, fieldLength, fieldHeight);
         }
         
         return join;
     }
-    
+
+
     private Card getFieldIconHolder(){
         Card join = new Card(new SpringLayout());
         join.setPadding(1);
@@ -238,18 +342,18 @@ public class FormField extends Card {
         icon
         */
         JLabel iconLabel = new JLabel(imageIcon);
-        hp.setAllSizes(iconLabel, fieldHeight, fieldHeight);
+        HPGui.setAllSizes(iconLabel, fieldHeight, fieldHeight);
         
         Card iconCard = new Card(new FlowLayout(FlowLayout.LEADING, 0, 0));
         iconCard.setPadding(0);
         iconCard.setOpacity(0.f);
         iconCard.add(iconLabel);
-        hp.setAllSizes(iconCard, fieldHeight, fieldHeight);
+        HPGui.setAllSizes(iconCard, fieldHeight, fieldHeight);
         
         if(formType == FormType.TEXTAREA){
-          hp.setAllSizes(join,fieldLength, textAreaHeight);  
+          HPGui.setAllSizes(join,fieldLength, textAreaHeight);  
         }else{
-            hp.setAllSizes(join, fieldLength, fieldHeight);
+            HPGui.setAllSizes(join, fieldLength, fieldHeight);
         }
         join.add(iconCard);
         return join;
@@ -269,7 +373,7 @@ public class FormField extends Card {
         textField.setFont(fieldFont);
         textField.setForeground(fieldColor);
         textField.setOpaque(false);
-        textField.setBackground(hp.getColTranslucent());
+        textField.setBackground(HPGui.getColTranslucent());
         textField.setBorder(BorderFactory.createEmptyBorder(innerBorderPad, innerBorderPad, innerBorderPad, innerBorderPad));
         textField.addMouseListener(new OnFieldMouseListener());
         
@@ -279,7 +383,7 @@ public class FormField extends Card {
     private void formTF(){
            
         textField = getJTextField();
-        hp.setAllSizes(textField, fieldLength, fieldHeight);
+        HPGui.setAllSizes(textField, fieldLength, fieldHeight);
         
         Card join = getFieldHolder();
         join.add(textField);
@@ -298,7 +402,7 @@ public class FormField extends Card {
         */
         
         textField = getJTextField();
-        hp.setAllSizes(textField, fieldLength-fieldHeight-2, fieldHeight);
+        HPGui.setAllSizes(textField, fieldLength-fieldHeight-2, fieldHeight);
         
         /*
         join icon and field
@@ -330,7 +434,7 @@ public class FormField extends Card {
         passwordField.setFont(fieldFont);
         passwordField.setForeground(fieldColor);
         passwordField.setOpaque(false);
-        passwordField.setBackground(hp.getColTranslucent());
+        passwordField.setBackground(HPGui.getColTranslucent());
         passwordField.addMouseListener(new OnFieldMouseListener());
         return passwordField;
     }
@@ -338,7 +442,7 @@ public class FormField extends Card {
     private void formPF(){
         
         passwordField = getJPasswordField();
-        hp.setAllSizes(passwordField, fieldLength, fieldHeight);
+        HPGui.setAllSizes(passwordField, fieldLength, fieldHeight);
         
         Card join = getFieldHolder();
         join.add(passwordField);
@@ -357,7 +461,7 @@ public class FormField extends Card {
         */
 
         passwordField = getJPasswordField();
-        hp.setAllSizes(passwordField, fieldLength-fieldHeight-2, fieldHeight);
+        HPGui.setAllSizes(passwordField, fieldLength-fieldHeight-2, fieldHeight);
         
         /*
         join icon and field
@@ -378,6 +482,7 @@ public class FormField extends Card {
     
     private JComboBox<Object> getJComboBox(){
          comboBox = new JComboBox<>(comBoxData);
+
          comboBox.addItemListener(new OnComboItemSelected());
          comboItem = comBoxData[0];
         /*
@@ -399,28 +504,40 @@ public class FormField extends Card {
     private void formCB(){
         
         comboBox = getJComboBox();
-        hp.setAllSizes(comboBox, fieldLength, fieldHeight);
+        HPGui.setAllSizes(comboBox, fieldLength, fieldHeight);
         
         Card join = getFieldHolder();
         join.add(comboBox);
         
         add(label);
         add(join);
-        
-        HPGui.Springer.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
+
+        if(fetchNameLabel != null){
+            Card fetchHolder = new Card();
+            fetchHolder.setLayout(new BoxLayout(fetchHolder, BoxLayout.LINE_AXIS));
+            fetchHolder.setPadding(0);
+            fetchHolder.setBackground(HPGui.getColTranslucent());
+
+            fetchHolder.add(Box.createHorizontalGlue());
+            fetchHolder.add(fetchNameLabel);
+            HPGui.setAllSizes(fetchHolder, fieldLength, 20);
+            add(fetchHolder);
+        }
+
+        int row = fetchNameLabel != null ? 3 : 2;
+        HPGui.Springer.makeCompactGrid(this, row, 1, 0, 0, 0, 0);
         
     }
     
     private void formCBIcon(){
-    
-    
+
         /*
         set label text and color
         */
         
         comboBox = getJComboBox();
         
-        hp.setAllSizes(comboBox, fieldLength-fieldHeight-2, fieldHeight);
+        HPGui.setAllSizes(comboBox, fieldLength-fieldHeight-2, fieldHeight);
         
         /*
         join icon and field
@@ -431,8 +548,21 @@ public class FormField extends Card {
         HPGui.Springer.makeCompactGrid(join, 1, 2, 0, 0, 2, 0);       
         add(label);
         add(join);
-        
-        HPGui.Springer.makeCompactGrid(this, 2, 1, 0, 0, 0, 0);
+
+        if(fetchNameLabel != null){
+            Card fetchHolder = new Card();
+            fetchHolder.setLayout(new BoxLayout(fetchHolder, BoxLayout.LINE_AXIS));
+            fetchHolder.setPadding(0);
+            fetchHolder.setBackground(HPGui.getColTranslucent());
+
+            fetchHolder.add(Box.createHorizontalGlue());
+            fetchHolder.add(fetchNameLabel);
+            HPGui.setAllSizes(fetchHolder, fieldLength, 20);
+            add(fetchHolder);
+        }
+
+        int row = fetchNameLabel != null ? 3 : 2;
+        HPGui.Springer.makeCompactGrid(this, row, 1, 0, 0, 0, 0);
     }
     
     /*
@@ -471,7 +601,7 @@ public class FormField extends Card {
         
         JScrollPane scrollPane = getScrollPane();
         
-        hp.setAllSizes(scrollPane, fieldLength, textAreaHeight);
+        HPGui.setAllSizes(scrollPane, fieldLength, textAreaHeight);
         
         Card join = getFieldHolder();
         join.add(scrollPane);
@@ -489,7 +619,7 @@ public class FormField extends Card {
         /*
         join icon and field
         */
-        hp.setAllSizes(scrollPane, fieldLength-fieldHeight-2, 100);
+        HPGui.setAllSizes(scrollPane, fieldLength-fieldHeight-2, 100);
         Card join = getFieldIconHolder();
         join.add(scrollPane);
         
@@ -528,11 +658,10 @@ public class FormField extends Card {
                     formTA();
                       break;
             }
-            
-            
+
         }else{ 
             if(fieldIcon != null){
-             imageIcon = hp.getImageIcon(fieldIcon);
+             imageIcon = HPGui.getImageIcon(fieldIcon);
             }
          
                 switch(formType){
@@ -629,6 +758,20 @@ public class FormField extends Card {
             for (int i = 0; i < objects.length(); i++) {
                 JSONObject data = objects.getJSONObject(i);
                 Array.set(object, i, data.get(field));
+            }
+            comBoxData = object;
+            comboBox.setModel(new DefaultComboBoxModel<>(object));
+            comboItem = object[0];
+        }
+    }
+
+    public void setObject(JSONArray objects){
+        if(objects.length() == 0)return;
+
+        Object [] object = new Object[objects.length()];
+        if(formType == FormType.COMBOBOX){
+            for (int i = 0; i < objects.length(); i++) {
+                Array.set(object, i, objects.get(i));
             }
             comBoxData = object;
             comboBox.setModel(new DefaultComboBoxModel<>(object));
@@ -951,11 +1094,11 @@ public class FormField extends Card {
             
             if(formType == FormType.TEXTAREA){
                 Card card = (Card)(comp.getParent().getParent().getParent());
-                card.setBackground(hp.getColor(fieldBgColor, .6f));
+                card.setBackground(HPGui.getColor(fieldBgColor, .6f));
                 card.repaint(); 
             }else{
                Card card = (Card)comp.getParent();
-                card.setBackground(hp.getColor(fieldBgColor, .6f));
+                card.setBackground(HPGui.getColor(fieldBgColor, .6f));
                 card.repaint(); 
             }
         }

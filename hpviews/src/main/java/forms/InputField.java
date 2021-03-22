@@ -1,9 +1,6 @@
 package forms;
 
-import views.ImageView;
-
 import javax.swing.*;
-import java.awt.*;
 
 public class InputField extends Form{
 

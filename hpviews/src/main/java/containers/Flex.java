@@ -38,7 +38,8 @@ public class Flex extends TransparentContainer{
         common();
     }
 
-    public Flex(FlexDirection flexDirection, FlexAlignment flexAlignmentX, FlexAlignment flexAlignmentY) {
+    public Flex(FlexDirection flexDirection, FlexAlignment flexAlignmentX,
+                FlexAlignment flexAlignmentY) {
         this.flexAlignmentX = flexAlignmentX;
         this.flexAlignmentY = flexAlignmentY;
         this.flexDirection = flexDirection;
@@ -56,6 +57,7 @@ public class Flex extends TransparentContainer{
     private void common(){
 
         childContainer = new TransparentContainer();
+
         if(flexDirection == FlexDirection.ROW){
 
             childContainer.setLayout(new BoxLayout(childContainer, BoxLayout.LINE_AXIS));
@@ -63,6 +65,7 @@ public class Flex extends TransparentContainer{
         }else{
             childContainer.setLayout(new BoxLayout(childContainer, BoxLayout.PAGE_AXIS));
         }
+
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         childContainer.setAlignmentX(getXAlignment());
@@ -71,12 +74,18 @@ public class Flex extends TransparentContainer{
     }
 
     public  Flex addComponent(Component component){
+        HPGui.setAllSizes(component, component.getPreferredSize());
+        addComponent((JComponent)component);
+        return this;
+    }
+
+    public  Flex addComponentNoSize(Component component){
         addComponent((JComponent)component);
         return this;
     }
 
     public Flex addComponent(JComponent component){
-        HPGui.setAllSizes(component, component.getPreferredSize());
+
         if(isAlignComponents){
             component.setAlignmentX(getXAlignment());
             component.setAlignmentY(getYAlignment());
@@ -93,7 +102,6 @@ public class Flex extends TransparentContainer{
         childContainer.add(component);
         return this;
     }
-
 
     public Flex build(){
 
@@ -134,27 +142,6 @@ public class Flex extends TransparentContainer{
     public void setTrimSpace(boolean trimSpace) {
         isTrimSpace = trimSpace;
     }
-
-    /*    @Override
-    public Component add(Component comp) {
-
-        JComponent component = (JComponent)comp;
-        HPGui.setAllSizes(component, component.getPreferredSize());
-        component.setAlignmentX(getXAlignment());
-        component.setAlignmentY(getYAlignment());
-
-        if(Objects.isNull(comp.getName())){
-            isAddedSpace = false;
-        }else{
-            isAddedSpace = comp.getName().equals(boxName);
-        }
-
-
-        return super.add(component);
-    }*/
-
-
-
 
     public int getXSpace() {
         return xSpace;

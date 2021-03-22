@@ -3,13 +3,17 @@ package controllers;
 
 import views.UIViewScroller;
 
+import java.awt.*;
+
 public interface OnUIViewScroller {
 
     void first();
     void last();
     void next();
-    void scrollTo(int scrollCardIndex);
-    void scrollTo(String scrollCardName);
-    void addScrollCard(UIViewScroller.ScrollCard scrollCard);
+    void previous();
+    void scrollTo(int index);
+    void scrollTo(String id);
+    void addComponent(Component component, String id);
+    void setExpandValue(Boolean expand);
 
 }

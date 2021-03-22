@@ -109,7 +109,7 @@ public class UIFilePicker extends Card {
         bSelect.setFont(font);
         bSelect.setActionCommand("s1");
 
-        bSelectAll = new JButton("select files");
+        bSelectAll = new JButton("select all files");
         bSelectAll.setActionCommand("s2");
         bSelectAll.setFont(font);
 

@@ -1,6 +1,7 @@
 package services;
 
 import containers.Card;
+import containers.Flex;
 import controllers.OnTreeDoubleClicked;
 import controllers.OnUITreeSelected;
 import org.json.JSONArray;
@@ -8,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import views.UITreeExplorer;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,27 +23,12 @@ public class UITreeService {
     private TreeDataSource dataSource;
     private final Card treeContainer;
     private final HPGui hp = new HPGui();
-
+    private final JScrollPane scrollPane;
 
     public UITreeService(UITreeExplorer uiTreeExplorer) {
         this.treeContainer = uiTreeExplorer.getTreeContainer();
         this.dataSource = uiTreeExplorer.getTreeDataSource();
-    }
-
-/*    public void oDrawLevels(){
-        oTreeData.forEach(model -> {
-
-        });
-    }*/
-    public void update(String newTreeData, TreeDataSource source){
-        this.dataSource = source;
-        treeContainer.removeAll();
-        drawLevels(newTreeData);
-        updateTreeContainer();
-    }
-
-    public void update(JSONArray newTreeData, TreeDataSource source){
-        update(newTreeData.toString(), source);
+        this.scrollPane = uiTreeExplorer.getScrollPane();
     }
 
     public void drawLevels(String treeData){
@@ -57,6 +44,19 @@ public class UITreeService {
             System.out.println("Explorer...");
         }
     }
+
+    public void update(String newTreeData, TreeDataSource source){
+        this.dataSource = source;
+        treeContainer.removeAll();
+        drawLevels(newTreeData);
+        updateTreeContainer();
+    }
+
+    public void update(JSONArray newTreeData, TreeDataSource source){
+        update(newTreeData.toString(), source);
+    }
+
+
 
     private Tree getLevelView(JSONObject levelData, JSONArray mainTree){
 
@@ -198,6 +198,7 @@ public class UITreeService {
                     showFolderContents(owner);
                 }
             }
+            scrollPane.revalidate();
         }
     }
 

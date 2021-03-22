@@ -1,11 +1,15 @@
 package views;
 
 import containers.Card;
+import controllers.OnClick;
 import services.HPGui;
 import services.UIFieldButtonService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 
 @SuppressWarnings("rawtypes")
 public class UIFieldButton extends Card {
@@ -38,6 +42,17 @@ public class UIFieldButton extends Card {
         this.height = height;
         this.placeholder = placeholder;
         this.placeholderColor = placeholderColor;
+        this.color = textColor;
+        build();
+    }
+
+    public UIFieldButton(String iconPath, String placeholder, int width, int height, String textColor) {
+        this.hp = new HPGui();
+        this.field = new JTextField();
+        this.icon = hp.getImageIcon(iconPath, 20, 20);
+        this.width = width;
+        this.height = height;
+        this.placeholder = placeholder;
         this.color = textColor;
         build();
     }
@@ -79,4 +94,12 @@ public class UIFieldButton extends Card {
         return iconLabel;
     }
 
+    public void onClickSubmit(OnClick<MouseEvent> event){
+        iconLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                event.clicked(e);
+            }
+        });
+    }
 }

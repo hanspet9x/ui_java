@@ -19,13 +19,13 @@ import java.util.regex.Pattern;
 public class PasswordField extends Form {
 
     private ImageView imageView;
-    private String openEye = "views/forms/eye.png";
-    private String closedEye = "views/forms/eye_close.png";
+    private final String openEye = "views/forms/eye.png";
+    private final String closedEye = "views/forms/eye_close.png";
     private boolean passwordVisible = false;
     private JTextField field;
-    private List<String> fieldValue = new ArrayList<String>();
-    private String fieldHiddenChar = "*";
-    private Pattern pattern = Pattern.compile("[A-Za-z 0-9.,?!@#$%^&*()_+=-]");
+    private List<String> fieldValue = new ArrayList<>();
+    private final String fieldHiddenChar = "*";
+    private final Pattern pattern = Pattern.compile("[A-Za-z 0-9.,?!@#$%^&*()_+=-]");
     private String realFieldValue = "";
 
     public PasswordField() {

@@ -23,6 +23,8 @@ import javax.swing.border.Border;
  *
  * @author Peter A. Akinlolu
  */
+
+@SuppressWarnings("rawtypes")
 public class HPDialog extends JDialog{
            
        HPDialog context = this;
@@ -30,7 +32,7 @@ public class HPDialog extends JDialog{
        int mY = 0;
        int mW = 400;
        int mH = 150;
-       HPGui hp = new HPGui();
+
        private Rectangle rectangle = null;
        private final Card panel = new Card(new SpringLayout());
        private JFrame frame = null;
@@ -50,8 +52,6 @@ public class HPDialog extends JDialog{
            if(!frame.getBounds().equals(rectangle))setSizeLocation();
            
            panel.setPadding(15);
-           Border outside = BorderFactory.createLineBorder(Color.GRAY, 1, true);
-           panel.setBorder(outside);
            panel.setBoxShadow(new Color(0,0,0,10));
            panel.setBorderRadius(10);
            
@@ -60,11 +60,12 @@ public class HPDialog extends JDialog{
            }
            JLabel titleLabel = new JLabel(title);
            titleLabel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 30));
-           titleLabel.setFont(new Font(HPGui.FontStandard, Font.BOLD, 14));
+           titleLabel.setFont(new Font(HPGui.FontHead, Font.BOLD, 14));
            
            JTextArea msgArea = new JTextArea(message);
            msgArea.setBorder(BorderFactory.createEmptyBorder());
            msgArea.setEditable(false);
+           msgArea.setBackground(HPGui.getColTranslucent());
            msgArea.setFocusable(false);
            msgArea.setLineWrap(true);
            msgArea.setMaximumSize(new Dimension(mW, 50));
@@ -81,18 +82,33 @@ public class HPDialog extends JDialog{
            setSize(frame.getBounds().width, frame.getBounds().height-30);
            setLocation(frame.getLocation().x, frame.getLocation().y+30); 
        }
-       public void alert(String title, String message){
-           
+
+       private void drawBox(String title, String message){
            init(title, message);
-           panel.add(hp.setAlignRight(addClose(false)));
-           
+           panel.add(HPGui.setAlignRight(addClose(false)));
+
            HPGui.Springer.makeCompactGrid(panel, 3, 1, 0, 0, 0, 10);
            add(panel);
            setVisible(true);
        }
-       
+
+        public void alert(String title, String message){
+            changeBg(Color.WHITE);
+            drawBox(title, message);
+        }
+
+        public void error(String title , String message){
+            changeBg(HPGui.getColor("#ffaaaa"));
+            drawBox(title, message);
+        }
+
+        public void success(String title , String message){
+            changeBg(HPGui.getColor("#aaffaa"));
+            drawBox(title, message);
+        }
+
        public void confirm(String title, String message){
-           
+           changeBg(Color.WHITE);
            init(title, message);
            Card buttons = new Card(new SpringLayout());
            buttons.add(addConfirm());
@@ -101,7 +117,7 @@ public class HPDialog extends JDialog{
 
            HPGui.Springer.makeCompactGrid(buttons, 1, 2, 0, 0, 5, 0);
            
-           panel.add(hp.setAlignRight(buttons));
+           panel.add(HPGui.setAlignRight(buttons));
           
            HPGui.Springer.makeCompactGrid(panel, 3, 1, 0, 0, 0, 10);
            
@@ -110,9 +126,13 @@ public class HPDialog extends JDialog{
                setVisible(true);
            });
        }
-       
+
+       private void changeBg(Color color){
+            panel.setBackground(color);
+       }
        private JLabel addClose(boolean isForConfirm){
            JLabel label = new JLabel("close");
+           label.setCursor(HPGui.getHandCursor());
            label.setFont(new Font(HPGui.FontStandard, Font.PLAIN, 14));
            label.addMouseListener(new MouseAdapter() {
                @Override

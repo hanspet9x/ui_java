@@ -61,7 +61,8 @@ public class TransparentContainer extends JPanel {
     }
 
     public void setContainerSize(Dimension dimension){
-        setPreferredSize(dimension);
+//        setPreferredSize(dimension);
+        HPGui.setAllSizes(this, dimension);
     }
 
     @Override

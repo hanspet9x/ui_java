@@ -7,6 +7,10 @@ package containers;
  */
 
 
+import controllers.AncestorAdapter;
+import controllers.OnClick;
+import services.HPGui;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,6 +23,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.border.Border;
+import javax.swing.event.AncestorEvent;
 
 /**
  *
@@ -29,9 +34,9 @@ public class Card<T> extends JPanel implements ActionListener{
     int width = 0;
     int height = 0;
     private int shadowSize = 3;
-    private int padding = 5;
-    private int paddingLeft = 5;
-    private int paddingTop = 5;
+    private int padding = 2;
+    private int paddingLeft = 0;
+    private int paddingTop = 0;
     private int paddingBottom = 0;
     private int paddingRight = 0;
     int borderRadius = 0;
@@ -121,6 +126,7 @@ public class Card<T> extends JPanel implements ActionListener{
         super.setBorder(BorderFactory.createCompoundBorder(border, inner));
     }
 
+
     public void setPadding(int paddingTop, int paddingRight, int paddingBottom, int paddingLeft) {
 
         this.paddingTop = paddingTop;
@@ -193,6 +199,33 @@ public class Card<T> extends JPanel implements ActionListener{
         if(!initTemp)tmpBoxShadow = boxShadow;
     }
 
+    public void setCardSizeAsync(Component referenceComponent) {
+
+        this.addAncestorListener(new AncestorAdapter() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                HPGui.setAllSizes(Card.this, referenceComponent.getWidth(), referenceComponent.getHeight());
+            }
+        });
+    }
+
+    public void setCardSizeAsync() {
+
+        this.addAncestorListener(new AncestorAdapter() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                HPGui.setAllSizes(Card.this, event.getAncestor().getWidth(), event.getAncestor().getHeight());
+            }
+        });
+    }
+
+    public void setCardSize(int width, int height) {
+        HPGui.setAllSizes(this, width, height);
+    }
+
+    public void setCardSize(Dimension d) {
+        HPGui.setAllSizes(this, d.width, d.height);
+    }
 
     @Override
     public Border getBorder() {
@@ -562,5 +595,13 @@ public class Card<T> extends JPanel implements ActionListener{
 
     }
 
+    public void onClick(OnClick<MouseEvent> clicked){
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                clicked.clicked(e);
+            }
+        });
+    }
 }
 

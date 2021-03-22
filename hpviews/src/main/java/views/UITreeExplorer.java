@@ -2,13 +2,18 @@ package views;
 
 import animations.Rotate;
 import containers.Card;
+import containers.Flex;
 import controllers.OnUITreeExplorerUpdate;
+import model.FlexAlignment;
+import model.FlexDirection;
 import org.json.JSONArray;
 import services.HPGui;
 import services.UIExplorerService;
 import services.UITreeService;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 @SuppressWarnings("rawtypes")
 public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
@@ -17,59 +22,65 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
     private static HPGui hp;
 
     private int stopUpdateOnLevel = -1;
+    private static final int fixedTreeWidth = 200;
     public static final String levelKey = "level";
     public static final String nameKey = "name";
     public static final String dirKey = "directory";
     public static final String childrenKey = "children";
 
-    private final Card treeContainer;
-    private final Explorer explorer;
-    private final UITreeService.TreeDataSource treeDataSource;
+    private  Card treeContainer;
+    private  Explorer explorer;
+    private  UITreeService.TreeDataSource treeDataSource;
     private UIExplorerService uiExplorerService;
     private UITreeService uiTreeService;
     private Component footer = null;
+    private JScrollPane scrollPane;
 
 
     public UITreeExplorer(String treeData, UITreeService.TreeDataSource treeDataSource) {
         super(new BorderLayout());
-        this.treeData = treeData;
-        this.explorer = new Explorer();
-        this.treeDataSource = treeDataSource;
-        this.treeContainer = new Card();
-        hp = new HPGui();
+        common(treeData, treeDataSource);
     }
 
     public UITreeExplorer(String treeData, Component footer, UITreeService.TreeDataSource treeDataSource) {
         super(new BorderLayout());
         this.footer = footer;
+        common(treeData, treeDataSource);
+    }
+
+    private void common(String treeData, UITreeService.TreeDataSource treeDataSource){
         this.treeData = treeData;
         this.explorer = new Explorer();
         this.treeDataSource = treeDataSource;
-        this.treeContainer = new Card();
-        hp = new HPGui();
+        this.treeContainer = new Card();//new Flex(FlexDirection.COLUMN, FlexAlignment.LEFT);
     }
 
     public void build(){
 
+        HPGui.setAllSizes(this, 700, 500);
         treeContainer.setPadding(1);
-        treeContainer.setPreferredSize(new Dimension(WIDTH, 500));
+        scrollPane  = HPGui.getScrollPane();
 
-        JScrollPane scrollPane = hp.getScrollPane(treeContainer);
-        hp.setAllSizes(scrollPane, WIDTH, 500);
-
-        hp.setAllSizes(this, 700, 500);
-
-        add(scrollPane, BorderLayout.LINE_START);
-
-        add(explorer, BorderLayout.CENTER);
-
-        if(footer != null)add(footer, BorderLayout.PAGE_END);
-
+        HPGui.setAllSizes(scrollPane, fixedTreeWidth, 500);
+        treeContainer.setLayout(new BoxLayout(treeContainer, BoxLayout.PAGE_AXIS));
         uiTreeService = new UITreeService(this);
         uiTreeService.drawLevels(treeData);
 
         uiExplorerService = new UIExplorerService(this);
         uiExplorerService.explore(treeData);
+
+
+     /*   OverflowView overflowView = new OverflowView(treeContainer, fixedTreeWidth);
+        overflowView.setOffsetComponentHeight(60);
+        overflowView.setBorder(BorderFactory.createLineBorder(Color.RED));*/
+
+        scrollPane.getViewport().add(treeContainer);
+
+        add(scrollPane, BorderLayout.LINE_START);
+        add(explorer, BorderLayout.CENTER);
+
+        if(footer != null)add(footer, BorderLayout.PAGE_END);
+
     }
 
 
@@ -79,6 +90,10 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
 
     public void treeDoubleClicked(Tree tree){
 
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
     }
 
     public void setStopUpdateOnLevel(int stopUpdateOnLevel) {
@@ -116,11 +131,10 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
         uiTreeService.update(data, source);
         uiExplorerService.update(data, source);
     }
-
-
     public void setFooterVisibility(boolean visible){
         if(footer != null)footer.setVisible(visible);
     }
+
     /**
      * Explorer Tree
      */
@@ -131,7 +145,7 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
         private final int level;
         private final boolean isDirectory;
         private final String name;
-        private StringBuilder treePath = new StringBuilder();
+        private final StringBuilder treePath = new StringBuilder();
         private JLabel lIndicator;
         private static int levelSpace = 2;
         private Card<Tree> innerCard;
@@ -139,16 +153,16 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
         private boolean hasChildren = false;
         private JSONArray mainTree;
         private JSONArray dirTree;
-        private JLabel label;
+        private final JLabel label;
         private JLabel icon;
-        private Rotate rotate;
+        private final Rotate rotate;
 
         public Tree(int level, boolean isDirectory, String name) {
             this.level = level;
             this.isDirectory = isDirectory;
             this.name = name;
             this.setToolTipText(name);
-            this.lIndicator = new JLabel(hp.getImageIcon("/views/explorer/caret.png", 10, 10));
+            this.lIndicator = new JLabel(HPGui.getImageIcon("/views/explorer/caret.png", 10, 10));
             this.rotate = new Rotate(lIndicator);
             this.rotate.setRate(10);
             this.label = new JLabel(this.name);
@@ -156,15 +170,16 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
         }
 
 
+
         private void build(){
             setPadding(2);
             if(level > 1){
-                hp.setLeftPadding(this, levelSpace * level);
+                HPGui.setLeftPadding(this, levelSpace * level);
             }
-//            setBackground(hp.getColor("#eeeeff"));
+
             innerCard = new Card<>();
 
-          hp.setAllSizes(this, 200, HEIGHT);
+          HPGui.setAllSizes(this, fixedTreeWidth, HEIGHT);
             if(isDirectory)innerCard.add(getJIndicator());
             innerCard.add(getJIcon());
             innerCard.add(getJLabel());
@@ -173,7 +188,7 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
         }
 
         private Rotate getJIndicator(){
-            hp.setRightPadding(rotate, 8);
+            HPGui.setRightPadding(rotate, 8);
             return rotate;
         }
 
@@ -185,12 +200,12 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
 
         private JLabel getJIcon(){
             String iconPath = isDirectory? "/views/explorer/folder.png" : "/views/explorer/file.png";
-            icon = new JLabel(hp.getImageIcon(iconPath, 12, 12));
+            icon = new JLabel(HPGui.getImageIcon(iconPath, 12, 12));
 
             if(!isDirectory){
-                hp.setPadding(icon, 0, 18, 0, 5);
+                HPGui.setPadding(icon, 0, 18, 0, 5);
             }else{
-                hp.setRightPadding(icon, 5);
+                HPGui.setRightPadding(icon, 5);
             }
             return icon;
         }
@@ -280,13 +295,12 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
 
         private String treeData;
         private final Card container;
-        private HPGui hp;
+
         public Explorer() {
             setLayout(new BorderLayout());
-            this.hp = new HPGui();
             setPadding(5);
             container = new Card(new GridLayout(0, 6));
-            JScrollPane scrollPane = hp.getScrollPane(container);
+            JScrollPane scrollPane = HPGui.getScrollPane(container);
             scrollPane.setHorizontalScrollBar(null);
 
             JScrollBar scrollBar = new JScrollBar(Adjustable.VERTICAL);
@@ -295,7 +309,8 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
             add(scrollPane, BorderLayout.CENTER);
         }
 
-      /*  public void addFirstLevel(JSONArray array){
+      /*
+        public void addFirstLevel(JSONArray array){
 
         }
 
@@ -305,7 +320,8 @@ public class UITreeExplorer extends Card implements OnUITreeExplorerUpdate{
 
         private void removeViews(){
 
-        }*/
+        }
+        */
 
         public Card getContainer() {
             return container;

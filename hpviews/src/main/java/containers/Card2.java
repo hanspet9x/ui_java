@@ -6,12 +6,17 @@
  */
 package containers;
 
+import controllers.AncestorAdapter;
+import controllers.OnClick;
 import services.HPGui;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 
@@ -344,6 +349,26 @@ public class Card2<T> extends JPanel{
         setEstimatedSize(d.width, d.height);
     }
 
+    public void setCardSizeAsync(Component referenceComponent) {
+
+        this.addAncestorListener(new AncestorAdapter() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                setEstimatedSize(referenceComponent.getWidth(), referenceComponent.getHeight());
+            }
+        });
+    }
+
+    public void setCardSizeAsync() {
+
+        this.addAncestorListener(new AncestorAdapter() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                setEstimatedSize(event.getAncestor().getWidth(), event.getAncestor().getHeight());
+            }
+        });
+    }
+
     private void setEstimatedSize(int width, int height){
         // HPGui.log("estimated set");
         int w = width+marginLeft+marginRight+paddingLeft+paddingRight+(borderWidth * 2);
@@ -651,7 +676,7 @@ public class Card2<T> extends JPanel{
 
         int x = 0;
         int y = 0;
-        int shd = hp.getPercent(70, boxShadowSize);
+        int shd = HPGui.getPercent(70, boxShadowSize);
         int yx = 0, xy = 0;
         int bbh = bh, bbw = bw;
 
@@ -798,5 +823,14 @@ public class Card2<T> extends JPanel{
 
     public enum ShadowPosition {
         TOP, BOTTOM, LEFT, RIGHT, CENTER
+    }
+
+    public void onClick(OnClick<MouseEvent> clicked){
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                clicked.clicked(e);
+            }
+        });
     }
 }

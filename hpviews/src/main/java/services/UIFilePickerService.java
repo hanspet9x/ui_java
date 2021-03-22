@@ -3,6 +3,7 @@ package services;
 import containers.Card;
 import controllers.OnFilesPicked;
 import views.ExplorerIcon;
+import views.UIDialogLoader;
 import views.UIFilePicker;
 
 import javax.swing.*;
@@ -115,10 +116,23 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
      * @param source Path
      * @throws IOException
      */
-    private void add(Path source) throws IOException {
+    private void add(Path source) {
         explorerCopy.clear();
-        Files.newDirectoryStream(source)
-            .forEach(path -> setIconParam(path, false));
+        try {
+            Files.newDirectoryStream(source)
+                    .forEach(path -> {
+                        if(Files.isReadable(path)){
+                            setIconParam(path, false);
+                        }
+                    });
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+
+       /* new UIDialogLoader("Loading", "please wait..")
+                .open( e -> {
+
+                });*/
     }
 
     private void setIconParam(Path path, boolean isLevelUp) {
@@ -164,7 +178,6 @@ public class UIFilePickerService extends MouseAdapter implements ActionListener 
         if(currentPath.substring(currentPath.lastIndexOf("\\")).trim().length() > 1){
 
             previousPath = currentPath.substring(0, currentPath.lastIndexOf("\\")+1);
-
         }
 
 

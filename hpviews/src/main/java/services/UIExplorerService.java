@@ -25,6 +25,7 @@ public class UIExplorerService extends MouseAdapter implements OnTreeDoubleClick
     private final List<JSONArray> arrays = new ArrayList<>();
     private final int stopUpdateOnLevel;
     private UITreeService.TreeDataSource dataSource;
+    private String absolutePath = "";
 
     public UIExplorerService(UITreeExplorer uiTreeExplorer) {
         treeData = uiTreeExplorer.getTree();
@@ -58,7 +59,7 @@ public class UIExplorerService extends MouseAdapter implements OnTreeDoubleClick
 
             JSONObject tree = array.getJSONObject(i);
             ExplorerIcon icon = getIcon(tree, array);
-            icon.addFullPath("/"+icon.getName());
+            icon.addFullPath(absolutePath+"/"+icon.getName());
             explorerContainer.add(getIconWrapper(icon));
 
         }
@@ -80,6 +81,27 @@ public class UIExplorerService extends MouseAdapter implements OnTreeDoubleClick
             explorerContainer.add(getIconWrapper(nIcon));
 
         }
+    }
+
+    private ExplorerIcon getIcon(JSONObject tree, JSONArray array){
+
+        ExplorerIcon icon = new ExplorerIcon(
+                tree.getString(UITreeExplorer.nameKey),
+                false,
+                tree.getBoolean(UITreeExplorer.dirKey),
+
+                UITreeService.TreeDataSource.JSON);
+
+        icon.setLevelNo(tree.getInt(UITreeExplorer.levelKey));
+        icon.setMainTree(array);
+        try {
+            icon.setDirTree(tree.getJSONArray(UITreeExplorer.childrenKey));
+        }catch (JSONException e){
+//            System.out.println(e.getMessage());
+            icon.setDirTree(new JSONArray());
+        }
+        icon.addMouseListener(this);
+        return icon;
     }
 
     private Card getIconWrapper(ExplorerIcon icon){
@@ -137,26 +159,7 @@ public class UIExplorerService extends MouseAdapter implements OnTreeDoubleClick
         explorerContainer.add(getIconWrapper(icon));
     }
 
-    private ExplorerIcon getIcon(JSONObject tree, JSONArray array){
 
-        ExplorerIcon icon = new ExplorerIcon(
-                tree.getString(UITreeExplorer.nameKey),
-                false,
-                tree.getBoolean(UITreeExplorer.dirKey),
-
-                UITreeService.TreeDataSource.JSON);
-
-        icon.setLevelNo(tree.getInt(UITreeExplorer.levelKey));
-        icon.setMainTree(array);
-        try {
-            icon.setDirTree(tree.getJSONArray(UITreeExplorer.childrenKey));
-        }catch (JSONException e){
-//            System.out.println(e.getMessage());
-            icon.setDirTree(new JSONArray());
-        }
-        icon.addMouseListener(this);
-        return icon;
-    }
 
     public void removeIcons(){
         if(explorerContainer.getComponentCount() > 0){
@@ -170,10 +173,10 @@ public class UIExplorerService extends MouseAdapter implements OnTreeDoubleClick
     }
 
     public void updateByTree(UITreeExplorer.Tree tree){
+        absolutePath = tree.getTreePath();
         JSONArray mainTree = tree.getMainTree();
         JSONArray dirTree = tree.getDirTree();
         int level = tree.getLevel();
-
         removeIcons();
         if(level == 1){
 

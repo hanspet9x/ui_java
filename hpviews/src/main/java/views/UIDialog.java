@@ -1,103 +1,122 @@
 package views;
 
 import containers.Card;
+import containers.Card2;
+import containers.Center;
+import containers.Flex;
+import model.FlexAlignment;
+import model.FlexDirection;
 import services.HPGui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ContainerAdapter;
-import java.awt.event.ContainerEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 
-@SuppressWarnings("rawtypes")
 public class UIDialog extends JDialog {
 
-    private final HPGui hp;
-    private final String title;
-    private final JLabel close;
-    private final Card contentWrapper;
-    private final Component content;
-    private final Card header;
 
-    public UIDialog(String title, Component content, int width, int height) {
-        this.hp = new HPGui();
-        this.title = title;
-        this.close = new JLabel("x");
-        this.content = content;
-        this.contentWrapper = new Card();
-        header = new Card();
-        hp.setAllSizes(this, width, height);
-        setModalityType(ModalityType.APPLICATION_MODAL);
-        build();
+    private JFrame frame = null;
+    private JButton cancel, send;
+    private Card2 container;
+    private String actionOneText = "Cancel", actionTwoText = "Send";
+    private Color actionOneColor = Color.WHITE, actionTwoColor = Color.LIGHT_GRAY;
+    private final int padding = 10;
+    private Consumer<Boolean> consumer = null;
+
+    public UIDialog(JFrame frame, Component component) {
+
+        this.frame = frame;
+        common(component);
+
     }
 
-    public UIDialog(String title, Component content) {
-        this.hp = new HPGui();
-        this.title = title;
-        this.close = new JLabel("x");
-        this.content = content;
-        this.contentWrapper = new Card();
-        header = new Card();
-        UIDialog uiDialog = this;
+    public UIDialog(Component component){
+        common(component);
+    }
 
-        contentWrapper.addContainerListener(new ContainerAdapter() {
-            @Override
-            public void componentAdded(ContainerEvent e) {
-                Dimension dm = e.getComponent().getPreferredSize();
-                hp.setAllSizes(uiDialog, dm.width, dm.height+40);
-            }
-        });
+    private void common(Component component){
+        setUndecorated(true);
+        setBackground(HPGui.getColor(Color.DARK_GRAY, .4f));
+        if(frame != null){
+            setSize(frame.getSize());
+            setLocation(frame.getLocation());
+        }else{
+            setSize(HPGui.getScreenSize());
+        }
         setModalityType(ModalityType.APPLICATION_MODAL);
-        build();
+
+        container = new Card2<>();
+        container.setPadding(padding);
+        container.setLayout(new BorderLayout());
+        container.add(component, BorderLayout.CENTER);
+        container.setBorderRadius(padding);
+        container.setBackground(HPGui.getColor("#fcfcfc"));
+    }
+
+    public UIDialog setCallbacks(Consumer<Boolean> consumer){
+        this.consumer = consumer;
+        return this;
+    }
+
+    public UIDialog setActionOneText(String actionOneText) {
+        this.actionOneText = actionOneText;
+        return this;
+    }
+
+    public UIDialog setActionTwoText(String actionTwoText) {
+        this.actionTwoText = actionTwoText;
+        return this;
+    }
+
+    public UIDialog setActionOneColor(Color actionOneColor) {
+        this.actionOneColor = actionOneColor;
+        return this;
+    }
+
+    public UIDialog setActionTwoColor(Color actionTwoColor) {
+        this.actionTwoColor = actionTwoColor;
+        return this;
     }
 
 
     private void build(){
 
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font(HPGui.FontStandard, Font.PLAIN, 18));
-        titleLabel.setForeground(hp.getColor("#eeeeee"));
+        send = new JButton(actionTwoText);
+        send.setBackground(actionTwoColor);
+        send.setFont(new Font(HPGui.FontHead, Font.PLAIN, 13));
+        send.addActionListener( e -> {
+            dispose();
+            if(consumer != null)consumer.accept(true);
+        });
 
-        close.setFont(new Font(HPGui.FontStandard, Font.PLAIN, 24));
-        close.setForeground(hp.getColor("#aaaaaa"));
-        close.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        close.addMouseListener(getAdapter(this));
+        cancel = new JButton(actionOneText);
+        cancel.setBackground(actionOneColor);
+        cancel.setFont(new Font(HPGui.FontHead, Font.PLAIN, 13));
+        cancel.addActionListener(e -> {
+            dispose();
+            if(consumer != null) consumer.accept(false);
+        });
 
-        header.setBackground(hp.getColor("#666666"));
-        header.setLayout(new BoxLayout(header, BoxLayout.LINE_AXIS));
-        header.setPadding(5, 8, 5, 8);
+        Card card = new Card();
+        card.setPadding(0);
+        card.setPaddingTop(padding);
+        card.setLayout(new BoxLayout(card, BoxLayout.LINE_AXIS));
+        card.add(Box.createHorizontalGlue());
+        card.add(cancel);
+        card.add(Box.createRigidArea(new Dimension(5, 0)));
+        card.add(send);
 
-        header.add(titleLabel);
-        header.add(Box.createHorizontalGlue());
-        header.add(close);
+        container.add(card, BorderLayout.PAGE_END);
 
-        contentWrapper.setPadding(2);
-        contentWrapper.setBoxShadow(hp.getColor("#666666", .2f));
-        contentWrapper.setBorder(BorderFactory.createLineBorder(hp.getColor("#666666"), 1));
-        contentWrapper.add(content);
+        Center center = new Center(container);
+        center.setContainerSize(this.getWidth(), this.getHeight());
+        add(center);
 
-        add(header, BorderLayout.PAGE_START);
-        add(contentWrapper, BorderLayout.CENTER);
-
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setUndecorated(true);
-        setLocationRelativeTo(null);
-//        setAlwaysOnTop(true);
     }
 
-    public void open(){
+    public UIDialog open(){
+        build();
         setVisible(true);
+        return this;
     }
-
-    private MouseAdapter getAdapter(UIDialog dialog){
-        return new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                dialog.dispose();
-            }
-        };
-    }
-
 }

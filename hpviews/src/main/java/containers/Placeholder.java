@@ -15,7 +15,7 @@ public class Placeholder extends Center{
         JLabel info = new JLabel(text);
         info.setFont(new Font(HPGui.FontText, Font.PLAIN, 20));
         info.setForeground(Color.LIGHT_GRAY);
-        add(info);
+        super.add(info);
     }
 
 

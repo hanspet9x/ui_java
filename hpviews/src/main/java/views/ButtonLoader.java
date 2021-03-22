@@ -3,10 +3,13 @@ package views;
 import animations.Rotate;
 import containers.Center;
 import containers.TransparentContainer;
+import controllers.OnClick;
 import shapes.CircleRim;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 
 public class ButtonLoader extends TransparentContainer {
 
@@ -79,12 +82,12 @@ public class ButtonLoader extends TransparentContainer {
     }
 
     public ButtonLoader setBackgroundColor(Color color){
-        this.button.setBackgroundColor(color);
+        this.button.setButtonBgColor(color);
         return this;
     }
 
     public ButtonLoader setForegroundColor(Color color){
-        this.button.setForegroundColor(color);
+        this.button.setButtonFgColor(color);
         return this;
     }
 
@@ -93,7 +96,8 @@ public class ButtonLoader extends TransparentContainer {
         return this;
     }
 
-    public void onClick(Button.OnButtonClicked onButtonClicked){
-        button.onClick(onButtonClicked);
+    public void onClick(OnClick<MouseEvent> click){
+        button.onClick(click);
     }
+
 }

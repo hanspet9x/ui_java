@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 @SuppressWarnings("rawtypes")
 public class ExplorerIcon extends Card {
@@ -28,6 +29,8 @@ public class ExplorerIcon extends Card {
     String folderPath = "/views/chooser/folder.png";
     String emptyFolderPath = "/views/chooser/empty_folder.png";
     String filePath = "/views/chooser/file.png";
+
+
     private Path path;
     private int levelNo;
     /**
@@ -74,7 +77,7 @@ public class ExplorerIcon extends Card {
 
     private void setIconImage(String iconPath) {
         processIcon = false;
-        icon.setIcon(hp.getImageIconFromSystem(iconPath, iconSize+20, iconSize));
+        icon.setIcon(HPGui.getImageIconFromSystem(iconPath, iconSize+20, iconSize));
     }
 
     private void init(String name, boolean levelUp, boolean isDirectory, UITreeService.TreeDataSource treeDataSource){
@@ -86,13 +89,14 @@ public class ExplorerIcon extends Card {
         this.treeDataSource = treeDataSource;
         if(treeDataSource == UITreeService.TreeDataSource.PATH)this.path = Paths.get(name);
 
-        fileIcon = hp.getImageIcon(filePath, iconSize, iconSize);
-        folderIcon = hp.getImageIcon(folderPath, iconSize, iconSize);
-        emptyFolderIcon = hp.getImageIcon(emptyFolderPath, iconSize, iconSize);
-        levelUpIcon =  hp.getImageIcon(levelUpPath, iconSize, iconSize);
+//        HPGui.log(name, chooseFilePath(name), HPGui.getExt(name));
+        folderIcon = HPGui.getImageIcon(folderPath, iconSize, iconSize);
+        emptyFolderIcon = HPGui.getImageIcon(emptyFolderPath, iconSize, iconSize);
+        levelUpIcon =  HPGui.getImageIcon(levelUpPath, iconSize, iconSize);
+        fileIcon = !isDirectory && HPGui.isFile(name) ? HPGui.getImageIcon(chooseFilePath(name), iconSize, iconSize) : emptyFolderIcon;
 
-        bgOnEnter = hp.getColor("#efeeff", .8f);
-        bgOnOut = hp.getColor("#ffffff");
+        bgOnEnter = HPGui.getColor("#efeeff", .8f);
+        bgOnOut = HPGui.getColor("#ffffff");
     }
 
     private void build() throws IOException {
@@ -103,11 +107,11 @@ public class ExplorerIcon extends Card {
 
         int iconWidth = 100;
         int iconHeight = 125;
-        hp.setAllSizes(this, iconWidth, iconHeight);
+        HPGui.setAllSizes(this, iconWidth, iconHeight);
         this.setPadding(10);
 
-        Border insideBorder = BorderFactory.createLineBorder(hp.getColor("#efefef"), 1, false);
-        hp.setPadding(this, insideBorder, 5);
+        Border insideBorder = BorderFactory.createLineBorder(HPGui.getColor("#efefef"), 1, false);
+        HPGui.setPadding(this, insideBorder, 5);
 
         add(icon);
         add(getIconLabel());
@@ -134,9 +138,9 @@ public class ExplorerIcon extends Card {
             }
         }
         label.setFont(new Font(HPGui.FontStandard, Font.PLAIN, 12));
-        hp.setAllSizes(label, 75, 25);
-        label.setForeground(hp.getColor("#666666"));
-        hp.setTopPadding(label, 5);
+        HPGui.setAllSizes(label, 75, 25);
+        label.setForeground(HPGui.getColor("#666666"));
+        HPGui.setTopPadding(label, 5);
         label.setHorizontalAlignment(JLabel.CENTER);
         return label;
     }
@@ -241,5 +245,42 @@ public class ExplorerIcon extends Card {
 
     public void setLevelNo(int levelNo) {
         this.levelNo = levelNo;
+    }
+
+    private String chooseFilePath(String filePath){
+//        HPGui.log(filePath);
+
+//        HPGui.log(HPGui.getExt(filePath));
+        switch (HPGui.getExt(filePath).toLowerCase()){
+
+            case ".jpg", ".png", ".gif", ".jpeg", ".tiff" -> {
+                return getFileIcon("image.png");
+            }
+            case ".mp4", ".avi", ".mov", ".mkv", ".flv", ".swf" -> {
+                return getFileIcon("video.png");
+            }
+            case ".ogg", ".mp3", ".m4a", ".wav", ".mpeg-4", ".midi", ".wma", ".aac" ->{
+                return getFileIcon("audio.png");
+            }
+            case ".pdf" -> {
+                return getFileIcon("pdf.png");
+            }
+            case ".doc", ".docx" -> {
+                return getFileIcon("doc.png");
+            }
+            case ".xls", ".xlsx" -> {
+                return getFileIcon("xls.png");
+            }
+            case ".ppt", ".pptx" -> {
+                return getFileIcon("ppt.png");
+            }
+            default -> {
+                return getFileIcon("file.png");
+            }
+        }
+    }
+
+    private String getFileIcon(String name){
+        return "/views/chooser/"+name;
     }
 }
