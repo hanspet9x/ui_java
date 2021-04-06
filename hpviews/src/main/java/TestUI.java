@@ -455,7 +455,7 @@ public class TestUI extends JFrame{
 
         HPGui.init();
         TestUI testUI = new TestUI();
-//        testUI.testFilePicker();
+       testUI.testFilePicker();
 //        testUI.testExplorer();
 //        testUI.testCenterComponent();
 //        testUI.testScrollPane();
